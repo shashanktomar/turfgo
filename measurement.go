@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"math"
 
-	tm "github.com/hammerheadnav/turfgo/math"
+	tm "github.com/shashanktomar/turfgo/math"
 )
 
-var unitError = "%s is not a valid unit. Allowed units are mi(miles), km(kilometers), d(degrees) and r(radians)"
-
 // Along takes a line and returns a point at a specified distance along the line.
+// Units should be one of km, mi, r or d
 func Along(lineString *LineString, distance float64, unit string) (*Point, error) {
-	var travelled float64
+	travelled := float64(0)
 	points := lineString.getPoints()
 	for i, point := range points {
 		if distance >= travelled && i == len(points)-1 {
@@ -22,7 +21,11 @@ func Along(lineString *LineString, distance float64, unit string) (*Point, error
 			if overshot == 0 {
 				return point, nil
 			}
-			direction := Bearing(points[i], points[i-1]) - 180
+			bearing, err := Bearing(points[i], points[i-1])
+			if err != nil {
+				return nil, err
+			}
+			direction := bearing - 180
 			interpolated, err := Destination(points[i], overshot, direction, unit)
 			if err != nil {
 				return nil, err
@@ -41,15 +44,16 @@ func Along(lineString *LineString, distance float64, unit string) (*Point, error
 }
 
 // Bearing takes two points and finds the geographic bearing between them.
-func Bearing(point1, point2 *Point) float64 {
-	lat1 := tm.DegreeToRad(point1.Lat)
-	lat2 := tm.DegreeToRad(point2.Lat)
-	lon1 := tm.DegreeToRad(point1.Lng)
-	lon2 := tm.DegreeToRad(point2.Lng)
-	a := math.Sin(lon2-lon1) * math.Cos(lat2)
-	b := math.Cos(lat1)*math.Sin(lat2) -
-		math.Sin(lat1)*math.Cos(lat2)*math.Cos(lon2-lon1)
-	return tm.RadToDegree(math.Atan2(a, b))
+func Bearing(point1, point2 *Point) (float64, error) {
+	if point1 == nil || point2 == nil {
+		return -1, errors.New("points can't be nil")
+	}
+
+	lat1, lng1 := tm.DegreesToRads(point1.Lat, point1.Lng)
+	lat2, lng2 := tm.DegreesToRads(point2.Lat, point2.Lng)
+	a := math.Sin(lng2-lng1) * math.Cos(lat2)
+	b := math.Cos(lat1)*math.Sin(lat2) - math.Sin(lat1)*math.Cos(lat2)*math.Cos(lng2-lng1)
+	return tm.RadToDegree(math.Atan2(a, b)), nil
 }
 
 // Center takes an array of points and returns the absolute center point of all points.
@@ -63,14 +67,18 @@ func Center(shapes ...Geometry) *Point {
 // Destination takes a Point and calculates the location of a destination point
 // given a distance in degrees, radians, miles, or kilometers; and bearing in
 // degrees. This uses the Haversine formula to account for global curvature.
-func Destination(startingPoint *Point, distance float64, bearing float64, unit string) (*Point, error) {
-	radius, ok := R[unit]
-	if !ok {
-		return nil, fmt.Errorf(unitError, unit)
+// Units should be one of km, mi, r or d
+func Destination(start *Point, distance float64, bearing float64, unit string) (*Point, error) {
+	if start == nil {
+		return nil, errors.New("startPoint can't be nil")
 	}
 
-	lat := tm.DegreeToRad(startingPoint.Lat)
-	lon := tm.DegreeToRad(startingPoint.Lng)
+	radius, ok := R[unit]
+	if !ok {
+		return nil, invalidUnitError(unit)
+	}
+
+	lat, lon := tm.DegreesToRads(start.Lat, start.Lng)
 	bearingRad := tm.DegreeToRad(bearing)
 
 	destLat := math.Asin(math.Sin(lat)*math.Cos(distance/radius) +

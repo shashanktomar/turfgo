@@ -2,7 +2,13 @@ package turfgo
 
 const (
 	infinity = 0x7FF0000000000000
-	none     = -1
+)
+
+const (
+	Km      = "km"
+	Mi      = "mi"
+	Degrees = "d"
+	Radians = "r"
 )
 
 //R is radius of earth

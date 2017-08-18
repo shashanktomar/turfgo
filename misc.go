@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 
-	tm "github.com/hammerheadnav/turfgo/math"
+	tm "github.com/shashanktomar/turfgo/math"
 )
 
 const invalidBearing = -1234.0
@@ -24,7 +24,10 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 			return nil, -1, -1, err
 		}
 		stopDist, _ := Distance(point, stop, units)
-		direction := Bearing(start, stop)
+		direction, err := Bearing(start, stop)
+		if err != nil {
+			return nil, -1, -1, err
+		}
 		height := math.Max(stopDist, startDist)
 
 		perpendicularPt1, _ := Destination(point, height, direction+90, units)
@@ -58,7 +61,10 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 func TriangularProjection(point *Point, previousPoint *Point, lineString *LineString, unit string) (*Point, float64, int, error) {
 	bearing := invalidBearing
 	if previousPoint != nil {
-		bearing = Bearing(previousPoint, point)
+		bearing, err := Bearing(previousPoint, point)
+		if err != nil {
+			return nil, -1, -1, err
+		}
 		for bearing < 0 {
 			bearing += 360
 		}
@@ -67,7 +73,10 @@ func TriangularProjection(point *Point, previousPoint *Point, lineString *LineSt
 		start := lineString.Points[i]
 		end := lineString.Points[i+1]
 		if !isAnyBaseAngleObtuse(point, start, end) {
-			bearingLs := Bearing(start, end)
+			bearingLs, err := Bearing(start, end)
+			if err != nil {
+				return nil, -1, -1, err
+			}
 			for bearingLs < 0 {
 				bearingLs += 360
 			}

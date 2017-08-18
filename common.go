@@ -2,7 +2,7 @@ package turfgo
 
 import (
 	"math"
-	tm "github.com/hammerheadnav/turfgo/math"
+	tm "github.com/shashanktomar/turfgo/math"
 )
 
 func isEqualLocation(point1 *Point, point2 *Point) bool {

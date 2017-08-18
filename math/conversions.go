@@ -15,3 +15,6 @@ func DegreeToRad(degree float64)  float64{
   return degree * math.Pi / 180
 }
 
+func DegreesToRads(first float64, second float64)  (float64, float64){
+  return DegreeToRad(first), DegreeToRad(second)
+}

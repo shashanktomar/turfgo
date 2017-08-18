@@ -7,107 +7,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestBearing(t *testing.T) {
-
-	Convey("Given two points, should calculate bearing between them", t, func() {
-		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.123, -75.534}
-		expected1 := -170.2330491349224
-		bearing1 := Bearing(point1, point2)
-		So(bearing1, ShouldEqual, expected1)
-
-		point3 := &Point{12.9715987, 77.59456269999998}
-		point4 := &Point{13.22328378, 77.77448784}
-		expected2 := 34.828578946361255
-		bearing2 := Bearing(point3, point4)
-		So(bearing2, ShouldEqual, expected2)
-	})
-
-}
-
-func TestDestination(t *testing.T) {
-
-	Convey("Given a wrong unit, should throw error", t, func() {
-		startingPoint := &Point{39.984, -75.343}
-		_, err := Destination(startingPoint, 32, 120, "invalidUnit")
-		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
-	})
-
-	Convey("Should return correct destination", t, func() {
-
-		Convey("Given miles unit", func() {
-			startingPoint := &Point{39.984, -75.343}
-			expected := &Point{39.74662966576427, -75.81645928866797}
-
-			dest, err := Destination(startingPoint, 30, -123, "mi")
-			So(err, ShouldBeNil)
-			So(dest, ShouldResemble, expected)
-		})
-
-		Convey("Given km unit", func() {
-			startingPoint := &Point{39.984, -75.343}
-			expected := &Point{40.01636403124376, -75.20865245149336}
-
-			dest, err := Destination(startingPoint, 12, 72.5, "km")
-			So(err, ShouldBeNil)
-			So(dest, ShouldResemble, expected)
-		})
-
-		Convey("Given radian unit", func() {
-			startingPoint := &Point{39.984, -75.343}
-			expected := &Point{67.3178236932749, -216.61938960828266}
-
-			dest, err := Destination(startingPoint, 1.2, 345, "r")
-			So(err, ShouldBeNil)
-			So(dest, ShouldResemble, expected)
-		})
-
-		Convey("Given degree unit", func() {
-			startingPoint := &Point{39.984, -75.343}
-			expected := &Point{-13.744745983973347, -92.31513759524121}
-
-			dest, err := Destination(startingPoint, 56, 200, "d")
-			So(err, ShouldBeNil)
-			So(dest, ShouldResemble, expected)
-		})
-
-	})
-
-}
-
-func TestDistance(t *testing.T) {
-
-	Convey("Given a wrong unit, should throw error", t, func() {
-		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.123, -75.534}
-
-		_, err := Distance(point1, point2, "invalidUnit")
-		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
-	})
-
-	Convey("Should return correct distance", t, func() {
-		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.123, -75.534}
-
-		distMi, errM := Distance(point1, point2, "mi")
-		So(errM, ShouldBeNil)
-		So(distMi, ShouldEqual, 60.37218405837491)
-
-		distKm, errK := Distance(point1, point2, "km")
-		So(errK, ShouldBeNil)
-		So(distKm, ShouldEqual, 97.15957803131901)
-
-		distR, errR := Distance(point1, point2, "r")
-		So(errR, ShouldBeNil)
-		So(distR, ShouldEqual, 0.015245501024842149)
-
-		distD, errD := Distance(point1, point2, "d")
-		So(errD, ShouldBeNil)
-		So(distD, ShouldEqual, 0.8735028650863799)
-	})
-}
+var units = [4]string{Km, Mi, Degrees, Radians}
 
 func TestAlong(t *testing.T) {
 
@@ -148,6 +48,137 @@ func TestAlong(t *testing.T) {
 		p, err := Along(lineString, 3, "mi")
 		So(err, ShouldBeNil)
 		So(p, ShouldResemble, point6)
+	})
+}
+
+func TestBearing(t *testing.T) {
+
+	type bearingTest struct {
+		point1 Point
+		point2 Point
+		result float64
+	}
+
+	testValues := []bearingTest{
+		{Point{39.984, -75.343}, Point{39.123, -75.534}, -170.23304913492177},
+		{Point{12.9715987, 77.59456269999998}, Point{13.22328378, 77.77448784}, 34.828578946361255},
+	}
+
+	Convey("Given two points, should calculate bearing between them", t, func() {
+		for _, tt := range testValues {
+			actual, err := Bearing(&tt.point1, &tt.point2)
+			So(err, ShouldBeNil)
+			So(actual, ShouldAlmostEqual, tt.result, 0.0000001)
+		}
+	})
+
+	Convey("Given nil points, should return error", t, func() {
+			_, err := Bearing(nil, &Point{})
+			So(err.Error(), ShouldEqual, "points can't be nil")
+	})
+}
+
+func TestDestination(t *testing.T) {
+
+	type destinationTest struct {
+		point    Point
+		distance float64
+		bearing  float64
+		result   map[string]Point
+	}
+
+	testValues := []destinationTest{
+		{Point{38.10096062273525, -75}, 100, 0,
+			map[string]Point{
+				Km:      {39, -75},
+				Mi:      {39.54782374175248, -75},
+				Degrees: {41.8990393544318, 105},
+				Radians: {7.678911930967332, -75},
+			},
+		},
+		{Point{39, -75}, 100, 180,
+			map[string]Point{
+				Km:      {38.10096062273525, -75},
+				Mi:      {37.55313688098277, -75},
+				Degrees: {-61.00000002283296, -74.99999999999999},
+				Radians: {69.42204869176791, -75},
+			},
+		},
+		{Point{39, -75}, 100, 90,
+			map[string]Point{
+				Km:      {38.994288534328966, -73.84321473156825},
+				Mi:      {38.985208813672266, -73.13849445143401},
+				Degrees: {-6.27383195845071, 22.802746801915237},
+				Radians: {32.86591377972705, -112.07480823869463},
+			},
+		},
+		{Point{39, -75}, 5000, 90,
+			map[string]Point{
+				Km:      {26.446988157260996, -22.898974671086123},
+				Mi:      {11.00429485821584, 1.1054470055309658},
+				Degrees: {28.821822144704377, -122.19517685125443},
+				Radians: {5.58578497583862, -158.06325963430967},
+			},
+		},
+	}
+
+	Convey("Should return correct destination", t, func() {
+		for _, tt := range testValues {
+			for _, unit := range units {
+				expected := tt.result[unit]
+				dest, err := Destination(&tt.point, tt.distance, tt.bearing, unit)
+				So(err, ShouldBeNil)
+				So(dest.Lat, ShouldAlmostEqual, expected.Lat, 0.0000001)
+				So(dest.Lng, ShouldAlmostEqual, expected.Lng, 0.0000001)
+			}
+		}
+	})
+
+	Convey("Given a wrong unit, should throw error", t, func() {
+		startingPoint := &Point{39.984, -75.343}
+		_, err := Destination(startingPoint, 32, 120, "invalidUnit")
+		So(err, ShouldNotBeNil)
+		So(err, ShouldResemble, invalidUnitError("invalidUnit"))
+	})
+
+	Convey("Given nil start, should throw error", t, func() {
+		_, err := Destination(nil, 32, 120, Km)
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldResemble, "startPoint can't be nil")
+	})
+
+}
+
+func TestDistance(t *testing.T) {
+
+	Convey("Given a wrong unit, should throw error", t, func() {
+		point1 := &Point{39.984, -75.343}
+		point2 := &Point{39.123, -75.534}
+
+		_, err := Distance(point1, point2, "invalidUnit")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
+	})
+
+	Convey("Should return correct distance", t, func() {
+		point1 := &Point{39.984, -75.343}
+		point2 := &Point{39.123, -75.534}
+
+		distMi, errM := Distance(point1, point2, "mi")
+		So(errM, ShouldBeNil)
+		So(distMi, ShouldEqual, 60.37218405837491)
+
+		distKm, errK := Distance(point1, point2, "km")
+		So(errK, ShouldBeNil)
+		So(distKm, ShouldEqual, 97.15957803131901)
+
+		distR, errR := Distance(point1, point2, "r")
+		So(errR, ShouldBeNil)
+		So(distR, ShouldEqual, 0.015245501024842149)
+
+		distD, errD := Distance(point1, point2, "d")
+		So(errD, ShouldBeNil)
+		So(distD, ShouldEqual, 0.8735028650863799)
 	})
 }
 
