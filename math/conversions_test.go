@@ -1,4 +1,4 @@
-package turfgoMath
+package math
 
 import (
   "testing"

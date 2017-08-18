@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 
-	"github.com/hammerheadnav/turfgo/turfgoMath"
+	tm "github.com/hammerheadnav/turfgo/math"
 )
 
 const invalidBearing = -1234.0
@@ -128,7 +128,7 @@ func isAnyBaseAngleObtuse(point *Point, start *Point, end *Point) bool {
 	if gamma == 0 {
 		return true
 	}
-	if turfgoMath.IsEqualFloat(alpha+beta, gamma, turfgoMath.TwelveDecimalPlaces) {
+	if tm.IsEqualFloat(alpha+beta, gamma, tm.TwelveDecimalPlaces) {
 		return false
 	}
 

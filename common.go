@@ -2,20 +2,19 @@ package turfgo
 
 import (
 	"math"
-
-	"github.com/hammerheadnav/turfgo/turfgoMath"
+	tm "github.com/hammerheadnav/turfgo/math"
 )
 
 func isEqualLocation(point1 *Point, point2 *Point) bool {
-	return turfgoMath.IsEqualFloatPair(point1.Lat, point1.Lng, point2.Lat, point2.Lng, turfgoMath.TwelveDecimalPlaces)
+	return tm.IsEqualFloatPair(point1.Lat, point1.Lng, point2.Lat, point2.Lng, tm.TwelveDecimalPlaces)
 }
 
 func translate(point *Point, horizontalDisplacement float64, verticalDisplacement float64) *Point {
 	latDisplacementRad := verticalDisplacement / R["m"]
-	longDisplacementRad := horizontalDisplacement / (R["m"] * math.Cos(turfgoMath.DegreeToRad(point.Lat)))
+	longDisplacementRad := horizontalDisplacement / (R["m"] * math.Cos(tm.DegreeToRad(point.Lat)))
 
-	latDisplacement := turfgoMath.RadToDegree(latDisplacementRad)
-	longDisplacement := turfgoMath.RadToDegree(longDisplacementRad)
+	latDisplacement := tm.RadToDegree(latDisplacementRad)
+	longDisplacement := tm.RadToDegree(longDisplacementRad)
 
 	translatedPoint := NewPoint(point.Lat+latDisplacement, point.Lng+longDisplacement)
 
