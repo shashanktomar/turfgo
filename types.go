@@ -7,6 +7,7 @@ const (
 const (
 	Km      = "km"
 	Mi      = "mi"
+	M      = "m"
 	Degrees = "d"
 	Radians = "r"
 )
@@ -23,12 +24,12 @@ type Geometry interface {
 	getPoints() []*Point
 }
 
-//PolygonI is geoJson geometry
+//PolygonI is geoJson polygon
 type PolygonI interface {
 	getPolygons() []*Polygon
 }
 
-//Point geojson type
+//A Point on earth
 type Point struct {
 	Lat float64
 	Lng float64

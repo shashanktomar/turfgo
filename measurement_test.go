@@ -1,94 +1,131 @@
 package turfgo
 
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"io/ioutil"
 )
 
 var units = [4]string{Km, Mi, Degrees, Radians}
 
+// used to avoid compiler optimization
+var resultF float64
+var resultP *Point
+
+var longRoute *LineString
+
+func init() {
+	gj, _ := ioutil.ReadFile("./testdata/common/route.geojson")
+	longRoute, _ = DecodeLineStringFromFeatureJSON(gj)
+}
+
 func TestAlong(t *testing.T) {
+	type alongTest struct {
+		distance float64
+		unit     string
+		result   *Point
+	}
+
+	testValues := []alongTest{
+		{1, Mi, NewPoint(38.88533657311743, -77.02417489836314)},
+		{1.2, Mi, NewPoint(38.8871105586916, -77.02436062207721)},
+		{1.4, Mi, NewPoint(38.88938593771034, -77.0220637504277)},
+		{1.6, Mi, NewPoint(38.891879938286934, -77.02018399074201)},
+		{1.8, Mi, NewPoint(38.893500737015884, -77.0224424741873)},
+		{2, Mi, NewPoint(38.89617811276868, -77.02291488647461)},
+		{100, Mi, NewPoint(38.931505469602044, -77.03596115112305)},
+		{0, Mi, NewPoint(38.878605901789236, -77.0316696166992)},
+	}
+
+	Convey("Should return a point along distance", t, func() {
+		gj, err := ioutil.ReadFile("./testdata/along/line.geojson")
+		So(err, ShouldBeNil)
+		ls, err := DecodeLineStringFromFeatureJSON(gj)
+		So(err, ShouldBeNil)
+		for _, tt := range testValues {
+			p, err := Along(ls, tt.distance, tt.unit)
+			So(err, ShouldBeNil)
+			So(p.Lat, ShouldAlmostEqual, tt.result.Lat, 0.0000001)
+			So(p.Lng, ShouldAlmostEqual, tt.result.Lng, 0.0000001)
+		}
+
+	})
 
 	Convey("Given a wrong unit, should throw error", t, func() {
-		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.97074218352032, -75.4590397138299}
+		point1 := NewPoint(39.984, -75.343)
+		point2 := NewPoint(39.97074218352032, -75.4590397138299)
 		lineString := NewLineString([]*Point{point1, point2})
 
 		_, err := Along(lineString, 13, "invalidUnit")
 		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
+		So(err, ShouldResemble, invalidUnitError("invalidUnit"))
 	})
 
-	Convey("Should return a point along distance", t, func() {
-		point1 := &Point{38.878605, -77.031669}
-		point2 := &Point{38.881946, -77.029609}
-		point3 := &Point{38.884084, -77.020339}
-		point4 := &Point{38.885821, -77.025661}
-		point5 := &Point{38.889563, -77.021884}
-		point6 := &Point{38.892368, -77.019824}
-		lineString := NewLineString([]*Point{point1, point2, point3, point4, point5, point6})
-		expected := &Point{38.885335546214506, -77.02417351582903}
-
-		p, err := Along(lineString, 1, "mi")
-		So(err, ShouldBeNil)
-		So(p, ShouldResemble, expected)
+	Convey("Given nil points, should return error", t, func() {
+		_, err := Along(nil, 22, Km)
+		So(err.Error(), ShouldEqual, "lineString can't be nil")
 	})
+}
 
-	Convey("Should return end point if distance longer then linestring", t, func() {
-		point1 := &Point{38.878605, -77.031669}
-		point2 := &Point{38.881946, -77.029609}
-		point3 := &Point{38.884084, -77.020339}
-		point4 := &Point{38.885821, -77.025661}
-		point5 := &Point{38.889563, -77.021884}
-		point6 := &Point{38.892368, -77.019824}
-		lineString := NewLineString([]*Point{point1, point2, point3, point4, point5, point6})
-
-		p, err := Along(lineString, 3, "mi")
-		So(err, ShouldBeNil)
-		So(p, ShouldResemble, point6)
-	})
+func BenchmarkAlong(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		resultP, _ = Along(longRoute, 20.234, Mi)
+	}
 }
 
 func TestBearing(t *testing.T) {
 
 	type bearingTest struct {
-		point1 Point
-		point2 Point
+		point1 *Point
+		point2 *Point
 		result float64
 	}
 
 	testValues := []bearingTest{
-		{Point{39.984, -75.343}, Point{39.123, -75.534}, -170.23304913492177},
-		{Point{12.9715987, 77.59456269999998}, Point{13.22328378, 77.77448784}, 34.828578946361255},
+		{NewPoint(39.984, -75.343),
+			NewPoint(39.123, -75.534),
+			-170.23304913492177},
+		{NewPoint(12.9715987, 77.59456269999998),
+			NewPoint(13.22328378, 77.77448784),
+			34.828578946361255},
 	}
 
 	Convey("Given two points, should calculate bearing between them", t, func() {
 		for _, tt := range testValues {
-			actual, err := Bearing(&tt.point1, &tt.point2)
+			actual, err := Bearing(tt.point1, tt.point2)
 			So(err, ShouldBeNil)
 			So(actual, ShouldAlmostEqual, tt.result, 0.0000001)
 		}
 	})
 
 	Convey("Given nil points, should return error", t, func() {
-			_, err := Bearing(nil, &Point{})
-			So(err.Error(), ShouldEqual, "points can't be nil")
+		_, err := Bearing(nil, &Point{})
+		So(err.Error(), ShouldEqual, "points can't be nil")
 	})
+}
+
+func BenchmarkBearing(b *testing.B) {
+	b.StopTimer()
+	p1 := NewPoint(39.984, -75.343)
+	p2 := NewPoint(39.123, -75.534)
+	b.StartTimer()
+	for n := 0; n < b.N; n++ {
+		resultF, _ = Bearing(p1, p2)
+	}
 }
 
 func TestDestination(t *testing.T) {
 
 	type destinationTest struct {
-		point    Point
+		point    *Point
 		distance float64
 		bearing  float64
 		result   map[string]Point
 	}
 
 	testValues := []destinationTest{
-		{Point{38.10096062273525, -75}, 100, 0,
+		{NewPoint(38.10096062273525, -75), 100, 0,
 			map[string]Point{
 				Km:      {39, -75},
 				Mi:      {39.54782374175248, -75},
@@ -96,7 +133,7 @@ func TestDestination(t *testing.T) {
 				Radians: {7.678911930967332, -75},
 			},
 		},
-		{Point{39, -75}, 100, 180,
+		{NewPoint(39, -75), 100, 180,
 			map[string]Point{
 				Km:      {38.10096062273525, -75},
 				Mi:      {37.55313688098277, -75},
@@ -104,7 +141,7 @@ func TestDestination(t *testing.T) {
 				Radians: {69.42204869176791, -75},
 			},
 		},
-		{Point{39, -75}, 100, 90,
+		{NewPoint(39, -75), 100, 90,
 			map[string]Point{
 				Km:      {38.994288534328966, -73.84321473156825},
 				Mi:      {38.985208813672266, -73.13849445143401},
@@ -112,7 +149,7 @@ func TestDestination(t *testing.T) {
 				Radians: {32.86591377972705, -112.07480823869463},
 			},
 		},
-		{Point{39, -75}, 5000, 90,
+		{NewPoint(39, -75), 5000, 90,
 			map[string]Point{
 				Km:      {26.446988157260996, -22.898974671086123},
 				Mi:      {11.00429485821584, 1.1054470055309658},
@@ -126,7 +163,7 @@ func TestDestination(t *testing.T) {
 		for _, tt := range testValues {
 			for _, unit := range units {
 				expected := tt.result[unit]
-				dest, err := Destination(&tt.point, tt.distance, tt.bearing, unit)
+				dest, err := Destination(tt.point, tt.distance, tt.bearing, unit)
 				So(err, ShouldBeNil)
 				So(dest.Lat, ShouldAlmostEqual, expected.Lat, 0.0000001)
 				So(dest.Lng, ShouldAlmostEqual, expected.Lng, 0.0000001)
@@ -135,8 +172,7 @@ func TestDestination(t *testing.T) {
 	})
 
 	Convey("Given a wrong unit, should throw error", t, func() {
-		startingPoint := &Point{39.984, -75.343}
-		_, err := Destination(startingPoint, 32, 120, "invalidUnit")
+		_, err := Destination(&Point{}, 32, 120, "invalidUnit")
 		So(err, ShouldNotBeNil)
 		So(err, ShouldResemble, invalidUnitError("invalidUnit"))
 	})
@@ -149,71 +185,147 @@ func TestDestination(t *testing.T) {
 
 }
 
+func BenchmarkDestination(b *testing.B) {
+	b.StopTimer()
+	p := NewPoint(39.984, -75.343)
+	b.StartTimer()
+	for n := 0; n < b.N; n++ {
+		resultP, _ = Destination(p, 45.34, 120.5, Mi)
+	}
+}
+
 func TestDistance(t *testing.T) {
 
+	type distanceTest struct {
+		point1 *Point
+		point2 *Point
+		result map[string]float64
+	}
+
+	testValues := []distanceTest{
+		{NewPoint(39.984, -75.343),
+			NewPoint(39.123, -75.534),
+			map[string]float64{
+				Km:      97.15957803131901,
+				Mi:      60.37218405837491,
+				Degrees: 0.8735028650863799,
+				Radians: 0.015245501024842149,
+			},
+		},
+		{NewPoint(72.134, -10.143),
+			NewPoint(39.123, -75.534),
+			map[string]float64{
+				Km:      5072.014768708954,
+				Mi:      3151.604971612656,
+				Degrees: 45.59940998096528,
+				Radians: 0.7958598413163273,
+			},
+		},
+	}
+
+	Convey("Given two points, should calculate distance between them", t, func() {
+		for _, tt := range testValues {
+			for _, unit := range units {
+				actual, err := Distance(tt.point1, tt.point2, unit)
+				So(err, ShouldBeNil)
+				So(actual, ShouldAlmostEqual, tt.result[unit], 0.0000001)
+			}
+		}
+	})
+
 	Convey("Given a wrong unit, should throw error", t, func() {
-		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.123, -75.534}
+		point1 := NewPoint(39.984, -75.343)
+		point2 := NewPoint(39.123, -75.534)
 
 		_, err := Distance(point1, point2, "invalidUnit")
 		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
+		So(err, ShouldResemble, invalidUnitError("invalidUnit"))
 	})
 
-	Convey("Should return correct distance", t, func() {
-		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.123, -75.534}
-
-		distMi, errM := Distance(point1, point2, "mi")
-		So(errM, ShouldBeNil)
-		So(distMi, ShouldEqual, 60.37218405837491)
-
-		distKm, errK := Distance(point1, point2, "km")
-		So(errK, ShouldBeNil)
-		So(distKm, ShouldEqual, 97.15957803131901)
-
-		distR, errR := Distance(point1, point2, "r")
-		So(errR, ShouldBeNil)
-		So(distR, ShouldEqual, 0.015245501024842149)
-
-		distD, errD := Distance(point1, point2, "d")
-		So(errD, ShouldBeNil)
-		So(distD, ShouldEqual, 0.8735028650863799)
+	Convey("Given nil points, should return error", t, func() {
+		_, err := Distance(nil, &Point{}, Km)
+		So(err.Error(), ShouldEqual, "points can't be nil")
 	})
+
+}
+
+func BenchmarkDistance(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		resultF, _ = Distance(&Point{39.984, -75.343},
+			&Point{39.123, -75.534}, Mi)
+	}
 }
 
 func TestExtent(t *testing.T) {
 
+	type extentTest struct {
+		geometry Geometry
+		result   []float64
+	}
+
+	point := NewPoint(0.5, 102.0)
+	lineString := NewLineString([]*Point{
+		{-10.0, 102.0},
+		{1.0, 103.0},
+		{0.0, 104.0},
+		{4.0, 130.0},
+	})
+	polygon := NewPolygon([]*LineString{NewLineString([]*Point{
+		{0.0, 101},
+		{1.0, 101.0},
+		{1.0, 100.0},
+		{0.0, 100.0},
+		{0.0, 101.0},
+	})})
+	multiLineString := NewMultiLineString([]*LineString{
+		{[]*Point{{0, 100}, {1, 101}}},
+		{[]*Point{{2, 102}, {3, 103}}},
+	})
+	multiPoly := NewMultiPolygon([]*Polygon{
+		{[]*LineString{
+			{[]*Point{
+				{2, 102},
+				{2, 103},
+				{3, 103},
+				{3, 102},
+				{2, 102},
+			}},
+		}},
+		{[]*LineString{
+			{[]*Point{
+				{0, 100},
+				{0, 101},
+				{1, 101},
+				{1, 100},
+				{0, 100},
+			}},
+			{[]*Point{
+				{0.2, 100.2},
+				{0.2, 100.8},
+				{0.8, 100.8},
+				{0.8, 100.2},
+				{0.2, 100.2},
+			}},
+		}},
+	})
+
+	testValues := []extentTest{
+		{point, []float64{102, 0.5, 102, 0.5}},
+		{lineString, []float64{102, -10, 130, 4}},
+		{polygon, []float64{100, 0, 101, 1}},
+		{multiLineString, []float64{100, 0, 103, 3}},
+		{multiPoly, []float64{100, 0, 103, 3}},
+	}
+
 	Convey("Given different type of shapes, should return bounding box", t, func() {
-		point := NewPoint(0.5, 102.0)
-
-		lineStringPoints := []*Point{
-			&Point{-10.0, 102.0},
-			&Point{1.0, 103.0},
-			&Point{0.0, 104.0},
-			&Point{4.0, 130.0},
+		for _, tt := range testValues {
+			bBox := Extent(tt.geometry)
+			So(bBox, ShouldResemble, tt.result)
 		}
-		lineString := NewLineString(lineStringPoints)
 
-		polygonOuterRing := NewLineString([]*Point{
-			&Point{0.0, 20.0},
-			&Point{0.0, 101.0},
-		})
-
-		polygonInnerRing := NewLineString([]*Point{
-			&Point{1.0, 101.0},
-			&Point{1.0, 100.0},
-			&Point{0.0, 100.0},
-		})
-
-		polygonLinestrings := []*LineString{polygonOuterRing, polygonInnerRing}
-		polygon := NewPolygon(polygonLinestrings)
-
-		bBox := Extent(point, lineString, polygon)
-		So(bBox[0], ShouldEqual, 20)
-		So(bBox[1], ShouldEqual, -10)
-		So(bBox[2], ShouldEqual, 130)
-		So(bBox[3], ShouldEqual, 4)
+		bBox := Extent(testValues[0].geometry, testValues[1].geometry,
+			testValues[2].geometry, testValues[3].geometry, testValues[4].geometry)
+		So(bBox, ShouldResemble, []float64{100, -10, 130, 4})
 	})
 }
 

@@ -48,12 +48,18 @@ func EncodeFeatureCollection(features []*geojson.Feature) *geojson.FeatureCollec
 // DecodeLineStringFromFeatureJSON decode geojson feature type lineString into *LineString
 func DecodeLineStringFromFeatureJSON(gj []byte) (*LineString, error) {
 	var f *geojson.Feature
-	json.Unmarshal(gj, &f)
+	err := json.Unmarshal(gj, &f)
+	if err != nil {
+		return nil, err
+	}
 	g, err := f.GetGeometry()
 	if err != nil {
 		return nil, err
 	}
-	ls, _ := g.(*geojson.LineString)
+	ls, ok := g.(*geojson.LineString)
+	if !ok {
+		return nil, err
+	}
 	points := []*Point{}
 	for _, c := range ls.Coordinates {
 		points = append(points, DecodePoint(c))

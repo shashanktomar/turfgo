@@ -9,7 +9,7 @@ import (
 
 func TestDecodeLineString(t *testing.T) {
 	Convey("Given geoJson file, should return lineString", t, func() {
-		j, _ := ioutil.ReadFile("./testFiles/pointOnLine/line1.geojson")
+		j, _ := ioutil.ReadFile("./testdata/pointOnLine/line1.geojson")
 		ls, err := DecodeLineStringFromFeatureJSON(j)
 
 		points := ls.Points

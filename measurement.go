@@ -2,15 +2,19 @@ package turfgo
 
 import (
 	"errors"
-	"fmt"
 	"math"
 
 	tm "github.com/shashanktomar/turfgo/math"
 )
 
 // Along takes a line and returns a point at a specified distance along the line.
-// Units should be one of km, mi, r or d
+// Returns the last point if distance is more than the span of the line.
+// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
 func Along(lineString *LineString, distance float64, unit string) (*Point, error) {
+	if lineString == nil {
+		return nil, errors.New("lineString can't be nil")
+	}
+
 	travelled := float64(0)
 	points := lineString.getPoints()
 	for i, point := range points {
@@ -21,12 +25,12 @@ func Along(lineString *LineString, distance float64, unit string) (*Point, error
 			if overshot == 0 {
 				return point, nil
 			}
-			bearing, err := Bearing(points[i], points[i-1])
+			bearing, err := Bearing(point, points[i-1])
 			if err != nil {
 				return nil, err
 			}
 			direction := bearing - 180
-			interpolated, err := Destination(points[i], overshot, direction, unit)
+			interpolated, err := Destination(point, overshot, direction, unit)
 			if err != nil {
 				return nil, err
 			}
@@ -67,7 +71,7 @@ func Center(shapes ...Geometry) *Point {
 // Destination takes a Point and calculates the location of a destination point
 // given a distance in degrees, radians, miles, or kilometers; and bearing in
 // degrees. This uses the Haversine formula to account for global curvature.
-// Units should be one of km, mi, r or d
+// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
 func Destination(start *Point, distance float64, bearing float64, unit string) (*Point, error) {
 	if start == nil {
 		return nil, errors.New("startPoint can't be nil")
@@ -91,20 +95,28 @@ func Destination(start *Point, distance float64, bearing float64, unit string) (
 
 // Distance calculates the distance between two points in degress, radians, miles, or
 // kilometers. This uses the Haversine formula to account for global curvature.
+// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
 func Distance(point1 *Point, point2 *Point, unit string) (float64, error) {
+	if point1 == nil || point2 == nil {
+		return -1, errors.New("points can't be nil")
+	}
 	radius, ok := R[unit]
 	if !ok {
-		return 0, fmt.Errorf(unitError, unit)
+		return 0, invalidUnitError(unit)
 	}
 
-	dLat := tm.DegreeToRad(point2.Lat - point1.Lat)
-	dLon := tm.DegreeToRad(point2.Lng - point1.Lng)
+	dLat, dLng := tm.DegreesToRads(point2.Lat-point1.Lat, point2.Lng-point1.Lng)
 	latRad1 := tm.DegreeToRad(point1.Lat)
 	latRad2 := tm.DegreeToRad(point2.Lat)
 	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
-		math.Sin(dLon/2)*math.Sin(dLon/2)*math.Cos(latRad1)*math.Cos(latRad2)
+		math.Sin(dLng/2)*math.Sin(dLng/2)*math.Cos(latRad1)*math.Cos(latRad2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	return radius * c, nil
+}
+
+// Bbox is an alias for Extent
+func Bbox(shapes ...Geometry) []float64 {
+	return Extent(shapes...)
 }
 
 // Extent Takes a set of features, calculates the extent of all input features, and returns a bounding box.
