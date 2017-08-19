@@ -361,29 +361,48 @@ func TestCenter(t *testing.T) {
 	})
 }
 
-func TestSurround(t *testing.T) {
+func TestExpand(t *testing.T) {
+	type expandTest struct {
+		geometry Geometry
+		distance float64
+		unit string
+		result   *BoundingBox
+	}
 
-	Convey("Given a point and bbox width, should return a bbox with given width and the point as its center", t, func() {
-		point := &Point{13.04464000, 80.26688000}
-		width := 500.0
-
-		bBox := Surround(point, width)
-
-		So(bBox[0], ShouldEqual, 80.2622657295878)
-		So(bBox[1], ShouldEqual, 13.040144803113675)
-		So(bBox[2], ShouldEqual, 80.2714942704122)
-		So(bBox[3], ShouldEqual, 13.049135196886324)
+	point := NewPoint(35.4691, -97.522259)
+	lineString := NewLineString([]*Point{
+		{35.964669147704086, -96.96258544921875},
+		{35.87792352995116, -97.39654541015625},
+		{35.66622234103479, -97.6409912109375},
+		{35.561277754384555, -97.22351074218749},
+		{35.45619556834375, -97.54486083984375},
 	})
 
-	Convey("Given a point and bbox width as zero, should return the same point as bbox", t, func() {
-		point := &Point{35.4691, -97.522259}
-		width := 0.0
-
-		bBox := Surround(point, width)
-
-		So(bBox[0], ShouldEqual, -97.522259)
-		So(bBox[1], ShouldEqual, 35.4691)
-		So(bBox[2], ShouldEqual, -97.522259)
-		So(bBox[3], ShouldEqual, 35.4691)
+	testValues := []expandTest{
+		{point, 20, Kilometers, NewBBox(-97.74303658676054, 35.28929212454705, -97.30148141323949, 35.64890787545294)},
+		{lineString, 10, Kilometers, NewBBox(-97.75136243406826, 35.36629163061727, -96.85150786206225, 36.05457308543056)},
+	}
+	Convey("Given different type of shapes, should return bounding box", t, func() {
+		for _, tt := range testValues {
+			b, err := Expand(tt.distance, tt.unit, tt.geometry)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, tt.result)
+		}
 	})
+
+}
+
+func BenchmarkExpand(b *testing.B) {
+	b.StopTimer()
+	lineString := NewLineString([]*Point{
+		{35.964669147704086, -96.96258544921875},
+		{35.87792352995116, -97.39654541015625},
+		{35.66622234103479, -97.6409912109375},
+		{35.561277754384555, -97.22351074218749},
+		{35.45619556834375, -97.54486083984375},
+	})
+	b.StartTimer()
+	for n := 0; n < b.N; n++ {
+		testResultBbox, _ = Expand(20, Kilometers, lineString)
+	}
 }

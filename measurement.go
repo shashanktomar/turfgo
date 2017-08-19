@@ -75,18 +75,18 @@ func Destination(start *Point, distance float64, bearing float64, unit string) (
 		return nil, errors.New("startPoint can't be nil")
 	}
 
-	radius, ok := R[unit]
-	if !ok {
-		return nil, invalidUnitError(unit)
+	r, err := DistanceToRads(distance, unit)
+	if err != nil {
+		return nil, err
 	}
 
 	lat, lon := DegreesToRads(start.Lat, start.Lng)
 	bearingRad := DegreeToRads(bearing)
 
-	destLat := math.Asin(math.Sin(lat)*math.Cos(distance/radius) +
-		math.Cos(lat)*math.Sin(distance/radius)*math.Cos(bearingRad))
-	destLon := lon + math.Atan2(math.Sin(bearingRad)*math.Sin(distance/radius)*math.Cos(lat),
-		math.Cos(distance/radius)-math.Sin(lat)*math.Sin(destLat))
+	destLat := math.Asin(math.Sin(lat)*math.Cos(r) +
+		math.Cos(lat)*math.Sin(r)*math.Cos(bearingRad))
+	destLon := lon + math.Atan2(math.Sin(bearingRad)*math.Sin(r)*math.Cos(lat),
+		math.Cos(r)-math.Sin(lat)*math.Sin(destLat))
 
 	return &Point{RadsToDegree(destLat), RadsToDegree(destLon)}, nil
 }
@@ -98,18 +98,13 @@ func Distance(point1 *Point, point2 *Point, unit string) (float64, error) {
 	if point1 == nil || point2 == nil {
 		return -1, errors.New("points can't be nil")
 	}
-	radius, ok := R[unit]
-	if !ok {
-		return 0, invalidUnitError(unit)
-	}
-
 	dLat, dLng := DegreesToRads(point2.Lat-point1.Lat, point2.Lng-point1.Lng)
 	latRad1 := DegreeToRads(point1.Lat)
 	latRad2 := DegreeToRads(point2.Lat)
 	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
 		math.Sin(dLng/2)*math.Sin(dLng/2)*math.Cos(latRad1)*math.Cos(latRad2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-	return radius * c, nil
+	return RadsToDistance(c, unit)
 }
 
 // Bbox is an alias for Extent
@@ -139,25 +134,34 @@ func Extent(geometries ...Geometry) *BoundingBox {
 	return extent
 }
 
-//// Expand Takes a set of features, calculates a collective bounding box around the features and expand it by the given
-//// distance in all directions. It returns a bounding box.
-//func Expand(distance float64, unit string, geometries ...Geometry) *BoundingBox {
-//	bbox := Bbox(geometries...)
-//	bottomLeft := translate(point, -width, -width)
-//	topRight := translate(point, width, width)
-//
-//	bbox := []float64{bottomLeft.Lng, bottomLeft.Lat, topRight.Lng, topRight.Lat}
-//
-//	return bbox
-//}
-
-// Surround Takes a point and a width, calculates the bounding box around the point with the given width.
-// Returns []float64 the bounding box of input given as an array in WSEN order (west, south, east, north)
-func Surround(point *Point, width float64) []float64 {
-	bottomLeft := translate(point, -width, -width)
-	topRight := translate(point, width, width)
-
-	bbox := []float64{bottomLeft.Lng, bottomLeft.Lat, topRight.Lng, topRight.Lat}
-
-	return bbox
+// BboxToCorners return the corner points SouthWest and NorthEast from bbox
+func BboxToCorners(box *BoundingBox) (*Point, *Point){
+	return NewPoint(box.South, box.West), NewPoint(box.North, box.East)
 }
+
+// Expand Takes a set of features, calculates a collective bounding box around the features
+// and expand it by the given distance in all directions. It returns a bounding box.
+// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
+func Expand(distance float64, unit string, geometries ...Geometry) (*BoundingBox, error) {
+	bbox := Bbox(geometries...)
+	bottomLeft, topRight := BboxToCorners(bbox)
+
+	leftEdge, err := Destination(bottomLeft, distance, -90, unit)
+	if err != nil {
+		return nil, err
+	}
+	bottomEdge, err := Destination(bottomLeft, distance, 180, unit)
+	if err != nil {
+		return nil, err
+	}
+	rightEge, err := Destination(topRight, distance, 90, unit)
+	if err != nil {
+		return nil, err
+	}
+	topEdge, err := Destination(topRight, distance, 0, unit)
+	if err != nil {
+		return nil, err
+	}
+	return Extent(leftEdge, bottomEdge, rightEge, topEdge), nil
+}
+
