@@ -5,19 +5,55 @@ const (
 )
 
 const (
-	Km      = "km"
-	Mi      = "mi"
-	M       = "m"
-	Degrees = "d"
-	Radians = "r"
+	Kilometers    = "kilometers"
+	Miles         = "miles"
+	Meters        = "meters"
+	CentiMeters   = "centimeters"
+	MilliMeters   = "millimeters"
+	Degrees       = "degress"
+	Radians       = "radians"
+	NauticalMiles = "nauticalmiles"
+	Inches        = "inches"
+	Yards         = "yards"
+	Feet          = "feet"
+	Acres         = "acres"
 )
 
 //R is radius of earth
-var R = map[string]float64{"mi": 3960,
-	"km": 6373,
-	"m":  6373000,
-	"d":  57.2957795,
-	"r":  1}
+var R = map[string]float64{
+	Miles:      3960,
+	Kilometers: 6373,
+	Meters:     6373000,
+	Degrees:    57.2957795,
+	Radians:    1,
+}
+
+// Conversion factors
+var Factors = map[string]float64{
+	Miles:         3960,
+	NauticalMiles: 3441.145,
+	Degrees:       57.2957795,
+	Radians:       1,
+	Inches:        250905600,
+	Yards:         6969600,
+	Meters:        6373000,
+	CentiMeters:   6.373e+8,
+	Kilometers:    6373,
+	Feet:          20908792.65,
+}
+
+// Area conversion factors
+var AreaFactors = map[string]float64{
+	Kilometers:  0.000001,
+	Meters:      1,
+	CentiMeters: 10000,
+	MilliMeters: 1000000,
+	Acres:       0.000247105,
+	Miles:       3.86e-7,
+	Yards:       1.195990046,
+	Feet:        10.763910417,
+	Inches:      1550.003100006,
+}
 
 //Geometry is geoJson geometry
 type Geometry interface {

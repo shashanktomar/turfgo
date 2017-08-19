@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 
-var units = [4]string{Km, Mi, Degrees, Radians}
+var units = [4]string{Kilometers, Miles, Degrees, Radians}
 
 // used to avoid compiler optimization
 var testResultF float64
@@ -29,14 +29,14 @@ func TestAlong(t *testing.T) {
 	}
 
 	testValues := []alongTest{
-		{1, Mi, NewPoint(38.88533657311743, -77.02417489836314)},
-		{1.2, Mi, NewPoint(38.8871105586916, -77.02436062207721)},
-		{1.4, Mi, NewPoint(38.88938593771034, -77.0220637504277)},
-		{1.6, Mi, NewPoint(38.891879938286934, -77.02018399074201)},
-		{1.8, Mi, NewPoint(38.893500737015884, -77.0224424741873)},
-		{2, Mi, NewPoint(38.89617811276868, -77.02291488647461)},
-		{100, Mi, NewPoint(38.931505469602044, -77.03596115112305)},
-		{0, Mi, NewPoint(38.878605901789236, -77.0316696166992)},
+		{1, Miles, NewPoint(38.88533657311743, -77.02417489836314)},
+		{1.2, Miles, NewPoint(38.8871105586916, -77.02436062207721)},
+		{1.4, Miles, NewPoint(38.88938593771034, -77.0220637504277)},
+		{1.6, Miles, NewPoint(38.891879938286934, -77.02018399074201)},
+		{1.8, Miles, NewPoint(38.893500737015884, -77.0224424741873)},
+		{2, Miles, NewPoint(38.89617811276868, -77.02291488647461)},
+		{100, Miles, NewPoint(38.931505469602044, -77.03596115112305)},
+		{0, Miles, NewPoint(38.878605901789236, -77.0316696166992)},
 	}
 
 	Convey("Should return a point along distance", t, func() {
@@ -64,14 +64,14 @@ func TestAlong(t *testing.T) {
 	})
 
 	Convey("Given nil points, should return error", t, func() {
-		_, err := Along(nil, 22, Km)
+		_, err := Along(nil, 22, Kilometers)
 		So(err.Error(), ShouldEqual, "lineString can't be nil")
 	})
 }
 
 func BenchmarkAlong(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		testResultP, _ = Along(longRoute, 20.234, Mi)
+		testResultP, _ = Along(longRoute, 20.234, Miles)
 	}
 }
 
@@ -128,34 +128,34 @@ func TestDestination(t *testing.T) {
 	testValues := []destinationTest{
 		{NewPoint(38.10096062273525, -75), 100, 0,
 			map[string]Point{
-				Km:      {39, -75},
-				Mi:      {39.54782374175248, -75},
-				Degrees: {41.8990393544318, 105},
-				Radians: {7.678911930967332, -75},
+				Kilometers: {39, -75},
+				Miles:      {39.54782374175248, -75},
+				Degrees:    {41.8990393544318, 105},
+				Radians:    {7.678911930967332, -75},
 			},
 		},
 		{NewPoint(39, -75), 100, 180,
 			map[string]Point{
-				Km:      {38.10096062273525, -75},
-				Mi:      {37.55313688098277, -75},
-				Degrees: {-61.00000002283296, -74.99999999999999},
-				Radians: {69.42204869176791, -75},
+				Kilometers: {38.10096062273525, -75},
+				Miles:      {37.55313688098277, -75},
+				Degrees:    {-61.00000002283296, -74.99999999999999},
+				Radians:    {69.42204869176791, -75},
 			},
 		},
 		{NewPoint(39, -75), 100, 90,
 			map[string]Point{
-				Km:      {38.994288534328966, -73.84321473156825},
-				Mi:      {38.985208813672266, -73.13849445143401},
-				Degrees: {-6.27383195845071, 22.802746801915237},
-				Radians: {32.86591377972705, -112.07480823869463},
+				Kilometers: {38.994288534328966, -73.84321473156825},
+				Miles:      {38.985208813672266, -73.13849445143401},
+				Degrees:    {-6.27383195845071, 22.802746801915237},
+				Radians:    {32.86591377972705, -112.07480823869463},
 			},
 		},
 		{NewPoint(39, -75), 5000, 90,
 			map[string]Point{
-				Km:      {26.446988157260996, -22.898974671086123},
-				Mi:      {11.00429485821584, 1.1054470055309658},
-				Degrees: {28.821822144704377, -122.19517685125443},
-				Radians: {5.58578497583862, -158.06325963430967},
+				Kilometers: {26.446988157260996, -22.898974671086123},
+				Miles:      {11.00429485821584, 1.1054470055309658},
+				Degrees:    {28.821822144704377, -122.19517685125443},
+				Radians:    {5.58578497583862, -158.06325963430967},
 			},
 		},
 	}
@@ -179,7 +179,7 @@ func TestDestination(t *testing.T) {
 	})
 
 	Convey("Given nil start, should throw error", t, func() {
-		_, err := Destination(nil, 32, 120, Km)
+		_, err := Destination(nil, 32, 120, Kilometers)
 		So(err, ShouldNotBeNil)
 		So(err.Error(), ShouldResemble, "startPoint can't be nil")
 	})
@@ -191,7 +191,7 @@ func BenchmarkDestination(b *testing.B) {
 	p := NewPoint(39.984, -75.343)
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		testResultP, _ = Destination(p, 45.34, 120.5, Mi)
+		testResultP, _ = Destination(p, 45.34, 120.5, Miles)
 	}
 }
 
@@ -207,19 +207,19 @@ func TestDistance(t *testing.T) {
 		{NewPoint(39.984, -75.343),
 			NewPoint(39.123, -75.534),
 			map[string]float64{
-				Km:      97.15957803131901,
-				Mi:      60.37218405837491,
-				Degrees: 0.8735028650863799,
-				Radians: 0.015245501024842149,
+				Kilometers: 97.15957803131901,
+				Miles:      60.37218405837491,
+				Degrees:    0.8735028650863799,
+				Radians:    0.015245501024842149,
 			},
 		},
 		{NewPoint(72.134, -10.143),
 			NewPoint(39.123, -75.534),
 			map[string]float64{
-				Km:      5072.014768708954,
-				Mi:      3151.604971612656,
-				Degrees: 45.59940998096528,
-				Radians: 0.7958598413163273,
+				Kilometers: 5072.014768708954,
+				Miles:      3151.604971612656,
+				Degrees:    45.59940998096528,
+				Radians:    0.7958598413163273,
 			},
 		},
 	}
@@ -244,7 +244,7 @@ func TestDistance(t *testing.T) {
 	})
 
 	Convey("Given nil points, should return error", t, func() {
-		_, err := Distance(nil, &Point{}, Km)
+		_, err := Distance(nil, &Point{}, Kilometers)
 		So(err.Error(), ShouldEqual, "points can't be nil")
 	})
 
@@ -253,7 +253,7 @@ func TestDistance(t *testing.T) {
 func BenchmarkDistance(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		testResultF, _ = Distance(&Point{39.984, -75.343},
-			&Point{39.123, -75.534}, Mi)
+			&Point{39.123, -75.534}, Miles)
 	}
 }
 

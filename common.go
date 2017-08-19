@@ -9,8 +9,8 @@ func isEqualLocation(point1 *Point, point2 *Point) bool {
 }
 
 func translate(point *Point, horizontalDisplacement float64, verticalDisplacement float64) *Point {
-	latDisplacementRad := verticalDisplacement / R["m"]
-	longDisplacementRad := horizontalDisplacement / (R["m"] * math.Cos(DegreeToRads(point.Lat)))
+	latDisplacementRad := verticalDisplacement / R[Meters]
+	longDisplacementRad := horizontalDisplacement / (R[Meters] * math.Cos(DegreeToRads(point.Lat)))
 
 	latDisplacement := RadsToDegree(latDisplacementRad)
 	longDisplacement := RadsToDegree(longDisplacementRad)

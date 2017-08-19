@@ -6,9 +6,9 @@ func Nearest(reference *Point, points []*Point) *Point {
 		return nil
 	}
 	nearestPoint := points[0]
-	distance, _ := Distance(reference, points[0], "mi")
+	distance, _ := Distance(reference, points[0], Miles)
 	for i := 1; i < len(points); i++ {
-		dist, _ := Distance(reference, points[i], "mi")
+		dist, _ := Distance(reference, points[i], Miles)
 		if dist < distance {
 			nearestPoint = points[i]
 			distance = dist

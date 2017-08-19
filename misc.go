@@ -129,9 +129,9 @@ func lineIntersects(line1Start *Point, line1End *Point, line2Start *Point, line2
 }
 
 func isAnyBaseAngleObtuse(point *Point, start *Point, end *Point) bool {
-	alpha, _ := Distance(point, start, "mi")
-	beta, _ := Distance(point, end, "mi")
-	gamma, _ := Distance(start, end, "mi")
+	alpha, _ := Distance(point, start, Miles)
+	beta, _ := Distance(point, end, Miles)
+	gamma, _ := Distance(start, end, Miles)
 	if gamma == 0 {
 		return true
 	}

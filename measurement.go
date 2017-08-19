@@ -118,9 +118,9 @@ func Bbox(shapes ...Geometry) *BoundingBox {
 }
 
 // Extent Takes a set of features, calculates the extent of all input features, and returns a bounding box.
-func Extent(shapes ...Geometry) *BoundingBox {
+func Extent(geometries ...Geometry) *BoundingBox {
 	extent := NewInfiniteBBox()
-	for _, shape := range shapes {
+	for _, shape := range geometries {
 		for _, point := range shape.getPoints() {
 			if extent.West > point.Lng {
 				extent.West = point.Lng
@@ -138,6 +138,18 @@ func Extent(shapes ...Geometry) *BoundingBox {
 	}
 	return extent
 }
+
+//// Expand Takes a set of features, calculates a collective bounding box around the features and expand it by the given
+//// distance in all directions. It returns a bounding box.
+//func Expand(distance float64, unit string, geometries ...Geometry) *BoundingBox {
+//	bbox := Bbox(geometries...)
+//	bottomLeft := translate(point, -width, -width)
+//	topRight := translate(point, width, width)
+//
+//	bbox := []float64{bottomLeft.Lng, bottomLeft.Lat, topRight.Lng, topRight.Lat}
+//
+//	return bbox
+//}
 
 // Surround Takes a point and a width, calculates the bounding box around the point with the given width.
 // Returns []float64 the bounding box of input given as an array in WSEN order (west, south, east, north)
