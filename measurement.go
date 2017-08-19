@@ -135,7 +135,7 @@ func Extent(geometries ...Geometry) *BoundingBox {
 }
 
 // BboxToCorners return the corner points SouthWest and NorthEast from bbox
-func BboxToCorners(box *BoundingBox) (*Point, *Point){
+func BboxToCorners(box *BoundingBox) (*Point, *Point) {
 	return NewPoint(box.South, box.West), NewPoint(box.North, box.East)
 }
 
@@ -164,4 +164,3 @@ func Expand(distance float64, unit string, geometries ...Geometry) (*BoundingBox
 	}
 	return Extent(leftEdge, bottomEdge, rightEge, topEdge), nil
 }
-

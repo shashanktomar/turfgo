@@ -365,7 +365,7 @@ func TestExpand(t *testing.T) {
 	type expandTest struct {
 		geometry Geometry
 		distance float64
-		unit string
+		unit     string
 		result   *BoundingBox
 	}
 

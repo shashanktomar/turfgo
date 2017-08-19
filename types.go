@@ -4,6 +4,7 @@ const (
 	infinity = 0x7FF0000000000000
 )
 
+// Unit constants
 const (
 	Kilometers    = "kilometers"
 	Miles         = "miles"
@@ -28,7 +29,7 @@ var R = map[string]float64{
 	Radians:    1,
 }
 
-// Conversion factors
+// Factors for unit conversion
 var Factors = map[string]float64{
 	Miles:         3960,
 	NauticalMiles: 3441.145,
@@ -42,7 +43,7 @@ var Factors = map[string]float64{
 	Feet:          20908792.65,
 }
 
-// Area conversion factors
+// AreaFactors for area unit conversion
 var AreaFactors = map[string]float64{
 	Kilometers:  0.000001,
 	Meters:      1,
@@ -165,11 +166,12 @@ func (p *MultiPolygon) getPolygons() []*Polygon {
 	return p.Polygons
 }
 
-//NewMultiPolygon creates a new multiPolygon for given polygons
+// NewMultiPolygon creates a new multiPolygon for given polygons
 func NewMultiPolygon(polygons []*Polygon) *MultiPolygon {
 	return &MultiPolygon{Polygons: polygons}
 }
 
+// BoundingBox represent a bbox
 type BoundingBox struct {
 	West  float64
 	South float64
@@ -177,10 +179,12 @@ type BoundingBox struct {
 	North float64
 }
 
+// NewInfiniteBBox creates a bounding box with corners really far away
 func NewInfiniteBBox() *BoundingBox {
 	return &BoundingBox{infinity, infinity, -infinity, -infinity}
 }
 
+// NewBBox creates bounding box with given corners
 func NewBBox(w float64, s float64, e float64, n float64) *BoundingBox {
 	return &BoundingBox{w, s, e, n}
 }

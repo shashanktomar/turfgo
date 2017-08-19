@@ -2,7 +2,7 @@ package turfgo
 
 import "errors"
 
-// Overlap takes two bounding box and returns true if there is an overlap.
+// IsBboxOverlap takes two bounding box and returns true if there is an overlap.
 // The order of values in array is WSEN(west, south , east, north)
 func IsBboxOverlap(b1 *BoundingBox, b2 *BoundingBox) (bool, error) {
 	if b1 == nil || b2 == nil {

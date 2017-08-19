@@ -169,7 +169,7 @@ func TestReduceDiffSegment(t *testing.T) {
 		So(reduceDiffSegment(seg), ShouldResemble, seg)
 	})
 
-	Convey("Given multiple segments ending on non continous, should stitch them", t, func() {
+	Convey("Given multiple segments ending on non continuous, should stitch them", t, func() {
 		seg := []*LineString{ls1, ls2, ls3, ls4, ls5}
 		merged1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}}
 		merged2 := []*Point{&Point{4, 5}, &Point{1, 1}, &Point{7, 8}}
@@ -178,7 +178,7 @@ func TestReduceDiffSegment(t *testing.T) {
 		So(reduceDiffSegment(seg), ShouldResemble, exptectedResult)
 	})
 
-	Convey("Given multiple segments ending on contionus, should stitch them", t, func() {
+	Convey("Given multiple segments ending on continuous, should stitch them", t, func() {
 		seg := []*LineString{ls1, ls2, ls3, ls4}
 		merged1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}}
 		merged2 := []*Point{&Point{4, 5}, &Point{1, 1}, &Point{7, 8}}
@@ -186,7 +186,7 @@ func TestReduceDiffSegment(t *testing.T) {
 		So(reduceDiffSegment(seg), ShouldResemble, exptectedResult)
 	})
 
-	Convey("Given three continous segments, should stitch them", t, func() {
+	Convey("Given three continuous segments, should stitch them", t, func() {
 		ls3 = NewLineString([]*Point{&Point{2, 3}, &Point{4, 5}})
 		seg := []*LineString{ls1, ls2, ls3}
 		merged := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}

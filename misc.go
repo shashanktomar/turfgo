@@ -55,7 +55,7 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 }
 
 // TriangularProjection calculate the projection of given point on the lineString, base angles for projection should be acute.
-// If bearing should also be considerd, pass in a previous point also, otherwise it should be nil
+// If bearing should also be considered, pass in a previous point, otherwise it should be nil
 func TriangularProjection(point *Point, previousPoint *Point, lineString *LineString, unit string) (*Point, float64, int, error) {
 	bearing := invalidBearing
 	if previousPoint != nil {
@@ -135,7 +135,7 @@ func isAnyBaseAngleObtuse(point *Point, start *Point, end *Point) bool {
 	if gamma == 0 {
 		return true
 	}
-	if IsEqualFloat(alpha+beta, gamma, TwelveDecimalPlaces) {
+	if isEqualFloat(alpha+beta, gamma, twelveDecimalPlaces) {
 		return false
 	}
 
