@@ -1,4 +1,4 @@
-package math
+package turfgo
 
 import "math"
 

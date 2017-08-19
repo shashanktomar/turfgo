@@ -1,21 +1,20 @@
-package math
+package turfgo
 
 import (
   "testing"
 )
 
-func TestRadToDegree(t *testing.T){
+func TestRadsToDegree(t *testing.T){
   var expected float64 = 57.295
-  result := RadToDegree(1)
+  result := RadsToDegree(1)
   if !IsEqualFloat(result, expected, ThreeDecimalPlaces){
     t.Errorf("Expected: %g, Actual: %g", expected, result)
   }
 }
 
-
-func TestDegreeToRand(t *testing.T){
+func TestDegreeToRads(t *testing.T){
   var expected float64 = 0.017
-  result := DegreeToRad(1)
+  result := DegreeToRads(1)
   if !IsEqualFloat(result, expected, ThreeDecimalPlaces){
     t.Errorf("Expected: %g, Actual: %g", expected, result)
   }

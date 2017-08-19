@@ -7,7 +7,7 @@ const (
 const (
 	Km      = "km"
 	Mi      = "mi"
-	M      = "m"
+	M       = "m"
 	Degrees = "d"
 	Radians = "r"
 )
@@ -132,4 +132,19 @@ func (p *MultiPolygon) getPolygons() []*Polygon {
 //NewMultiPolygon creates a new multiPolygon for given polygons
 func NewMultiPolygon(polygons []*Polygon) *MultiPolygon {
 	return &MultiPolygon{Polygons: polygons}
+}
+
+type BoundingBox struct {
+	West  float64
+	South float64
+	East  float64
+	North float64
+}
+
+func NewInfiniteBBox() *BoundingBox {
+	return &BoundingBox{infinity, infinity, -infinity, -infinity}
+}
+
+func NewBBox(w float64, s float64, e float64, n float64) *BoundingBox {
+	return &BoundingBox{w, s, e, n}
 }

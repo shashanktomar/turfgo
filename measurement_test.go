@@ -10,8 +10,9 @@ import (
 var units = [4]string{Km, Mi, Degrees, Radians}
 
 // used to avoid compiler optimization
-var resultF float64
-var resultP *Point
+var testResultF float64
+var testResultP *Point
+var testResultBbox *BoundingBox
 
 var longRoute *LineString
 
@@ -70,7 +71,7 @@ func TestAlong(t *testing.T) {
 
 func BenchmarkAlong(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		resultP, _ = Along(longRoute, 20.234, Mi)
+		testResultP, _ = Along(longRoute, 20.234, Mi)
 	}
 }
 
@@ -111,7 +112,7 @@ func BenchmarkBearing(b *testing.B) {
 	p2 := NewPoint(39.123, -75.534)
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		resultF, _ = Bearing(p1, p2)
+		testResultF, _ = Bearing(p1, p2)
 	}
 }
 
@@ -190,7 +191,7 @@ func BenchmarkDestination(b *testing.B) {
 	p := NewPoint(39.984, -75.343)
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		resultP, _ = Destination(p, 45.34, 120.5, Mi)
+		testResultP, _ = Destination(p, 45.34, 120.5, Mi)
 	}
 }
 
@@ -251,7 +252,7 @@ func TestDistance(t *testing.T) {
 
 func BenchmarkDistance(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		resultF, _ = Distance(&Point{39.984, -75.343},
+		testResultF, _ = Distance(&Point{39.984, -75.343},
 			&Point{39.123, -75.534}, Mi)
 	}
 }
@@ -260,7 +261,7 @@ func TestExtent(t *testing.T) {
 
 	type extentTest struct {
 		geometry Geometry
-		result   []float64
+		result   *BoundingBox
 	}
 
 	point := NewPoint(0.5, 102.0)
@@ -310,11 +311,11 @@ func TestExtent(t *testing.T) {
 	})
 
 	testValues := []extentTest{
-		{point, []float64{102, 0.5, 102, 0.5}},
-		{lineString, []float64{102, -10, 130, 4}},
-		{polygon, []float64{100, 0, 101, 1}},
-		{multiLineString, []float64{100, 0, 103, 3}},
-		{multiPoly, []float64{100, 0, 103, 3}},
+		{point, NewBBox(102, 0.5, 102, 0.5)},
+		{lineString, NewBBox(102, -10, 130, 4)},
+		{polygon, NewBBox(100, 0, 101, 1)},
+		{multiLineString, NewBBox(100, 0, 103, 3)},
+		{multiPoly, NewBBox(100, 0, 103, 3)},
 	}
 
 	Convey("Given different type of shapes, should return bounding box", t, func() {
@@ -325,8 +326,23 @@ func TestExtent(t *testing.T) {
 
 		bBox := Extent(testValues[0].geometry, testValues[1].geometry,
 			testValues[2].geometry, testValues[3].geometry, testValues[4].geometry)
-		So(bBox, ShouldResemble, []float64{100, -10, 130, 4})
+		So(bBox, ShouldResemble, NewBBox(100, -10, 130, 4))
 	})
+}
+
+func BenchmarkExtent(b *testing.B) {
+	b.StopTimer()
+	polygon := NewPolygon([]*LineString{NewLineString([]*Point{
+		{0.0, 101},
+		{1.0, 101.0},
+		{1.0, 100.0},
+		{0.0, 100.0},
+		{0.0, 101.0},
+	})})
+	b.StartTimer()
+	for n := 0; n < b.N; n++ {
+		testResultBbox = Extent(polygon)
+	}
 }
 
 func TestCenter(t *testing.T) {
@@ -342,54 +358,6 @@ func TestCenter(t *testing.T) {
 		point := Center(lineString, point5)
 		So(point.Lat, ShouldEqual, 35.4661725)
 		So(point.Lng, ShouldEqual, -97.5125065)
-	})
-}
-
-func TestOverlap(t *testing.T) {
-	Convey("Should return false if boxes doesn't overlap", t, func() {
-		// b2 above b1
-		b1 := []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
-		b2 := []float64{3.4716796874999996, 32.24997445586331, 8.876953125, 35.88905007936091}
-		b, err := Overlap(b1, b2)
-		So(err, ShouldBeNil)
-		So(b, ShouldBeFalse)
-
-		// b2 on left of b1
-		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
-		b2 = []float64{-12.2197265625, 28.24997445586331, -2.876953125, 39.88905007936091}
-		b, err = Overlap(b1, b2)
-		So(err, ShouldBeNil)
-		So(b, ShouldBeFalse)
-
-		// b2 below b1
-		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
-		b2 = []float64{-12.2197265625, 2.24997445586331, 23.876953125, 15.88905007936091}
-		b, err = Overlap(b1, b2)
-		So(err, ShouldBeNil)
-		So(b, ShouldBeFalse)
-
-		// b2 on right of b1
-		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
-		b2 = []float64{15.2197265625, 18.24997445586331, 23.876953125, 29.88905007936091}
-		b, err = Overlap(b1, b2)
-		So(err, ShouldBeNil)
-		So(b, ShouldBeFalse)
-	})
-
-	Convey("Should return true if boxes overlap", t, func() {
-		// overlap where a point is inside either of the bbox
-		b1 := []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
-		b2 := []float64{-2.4716796874999996, 15.24997445586331, 8.876953125, 21.88905007936091}
-		b, err := Overlap(b1, b2)
-		So(err, ShouldBeNil)
-		So(b, ShouldBeTrue)
-
-		// overlap where no point of either bbox reside inside any bbox
-		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
-		b2 = []float64{-4.2197265625, 21.24997445586331, 26.876953125, 24.88905007936091}
-		b, err = Overlap(b1, b2)
-		So(err, ShouldBeNil)
-		So(b, ShouldBeTrue)
 	})
 }
 
