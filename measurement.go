@@ -62,7 +62,7 @@ func Center(shapes ...Geometry) *Point {
 	bBox := Extent(shapes...)
 	lng := (bBox.West + bBox.East) / 2
 	lat := (bBox.South + bBox.North) / 2
-	return &Point{lat, lng}
+	return NewPoint(lat, lng)
 }
 
 // Destination takes a Point and calculates the location of a destination point

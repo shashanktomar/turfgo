@@ -42,11 +42,11 @@ func TestBearingToAngle(t *testing.T) {
 	Convey("Should return angle between 0-360", t, func() {
 		So(BearingToAngle(40), ShouldAlmostEqual, 40, twelveDecimalPlaces)
 		So(BearingToAngle(410), ShouldAlmostEqual, 50, twelveDecimalPlaces)
-		So(BearingToAngle(360 + 360 + 270.124), ShouldAlmostEqual, 270.124, twelveDecimalPlaces)
-		So(BearingToAngle(- 105), ShouldAlmostEqual, 255, twelveDecimalPlaces)
-		So(BearingToAngle(- 200), ShouldAlmostEqual, 160, twelveDecimalPlaces)
-		So(BearingToAngle(- 360 - 34.6), ShouldAlmostEqual, 325.4, twelveDecimalPlaces)
-		So(BearingToAngle(- 395), ShouldAlmostEqual, 325, twelveDecimalPlaces)
+		So(BearingToAngle(360+360+270.124), ShouldAlmostEqual, 270.124, twelveDecimalPlaces)
+		So(BearingToAngle(-105), ShouldAlmostEqual, 255, twelveDecimalPlaces)
+		So(BearingToAngle(-200), ShouldAlmostEqual, 160, twelveDecimalPlaces)
+		So(BearingToAngle(-360-34.6), ShouldAlmostEqual, 325.4, twelveDecimalPlaces)
+		So(BearingToAngle(-395), ShouldAlmostEqual, 325, twelveDecimalPlaces)
 
 	})
 }

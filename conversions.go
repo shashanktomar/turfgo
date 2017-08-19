@@ -46,4 +46,3 @@ func BearingToAngle(bearing float64) float64 {
 	}
 	return angle
 }
-

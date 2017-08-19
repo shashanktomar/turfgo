@@ -9,13 +9,13 @@ import (
 func TestPolylineEncoder(t *testing.T) {
 	Convey("Should encode an array of locations as a polyline string", t, func() {
 		coordinates := []*Point{{38.5, -120.2}, {40.7, -120.95}, {43.252, -126.453}}
-		polyline := EncodePolyline(coordinates)
+		polyline := EncodePolyline(coordinates, 2)
 		So(polyline, ShouldEqual, "_p~iF~ps|U_ulLnnqC_mqNvxq`@")
 	})
 
 	Convey("Should give empty string for empty locations", t, func() {
 		coordinates := []*Point{}
-		polyline := EncodePolyline(coordinates)
+		polyline := EncodePolyline(coordinates, 2)
 		So(polyline, ShouldEqual, "")
 	})
 }
@@ -23,7 +23,7 @@ func TestPolylineEncoder(t *testing.T) {
 func TestPolylineDecoder(t *testing.T) {
 	Convey("Should decode a string as an array of locations", t, func() {
 		result := []*Point{{38.5, -120.2}, {40.7, -120.95}, {43.252, -126.453}}
-		coordinates, err := DecodePolyline("_p~iF~ps|U_ulLnnqC_mqNvxq`@")
+		coordinates, err := DecodePolyline("_p~iF~ps|U_ulLnnqC_mqNvxq`@", 2)
 		So(err, ShouldBeNil)
 		So(len(coordinates), ShouldEqual, 3)
 		So(coordinates[0], ShouldResemble, result[0])
@@ -32,7 +32,7 @@ func TestPolylineDecoder(t *testing.T) {
 	})
 
 	Convey("Should throw error if invalid string", t, func() {
-		_, err := DecodePolyline("invalidPolyline")
+		_, err := DecodePolyline("invalidPolyline", 2)
 		So(err, ShouldNotBeNil)
 	})
 }
