@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 
-var units = [4]string{Kilometers, Miles, Degrees, Radians}
+var units = [4]Unit{Kilometers, Miles, Degrees, Radians}
 
 // used to avoid compiler optimization
 var testResultF float64
@@ -24,7 +24,7 @@ func init() {
 func TestAlong(t *testing.T) {
 	type alongTest struct {
 		distance float64
-		unit     string
+		unit     Unit
 		result   *Point
 	}
 
@@ -51,16 +51,6 @@ func TestAlong(t *testing.T) {
 			So(p.Lng, ShouldAlmostEqual, tt.result.Lng, 0.0000001)
 		}
 
-	})
-
-	Convey("Given a wrong unit, should throw error", t, func() {
-		point1 := NewPoint(39.984, -75.343)
-		point2 := NewPoint(39.97074218352032, -75.4590397138299)
-		lineString := NewLineString([]*Point{point1, point2})
-
-		_, err := Along(lineString, 13, "invalidUnit")
-		So(err, ShouldNotBeNil)
-		So(err, ShouldResemble, invalidUnitError("invalidUnit"))
 	})
 
 	Convey("Given nil points, should return error", t, func() {
@@ -122,12 +112,12 @@ func TestDestination(t *testing.T) {
 		point    *Point
 		distance float64
 		bearing  float64
-		result   map[string]Point
+		result   map[Unit]Point
 	}
 
 	testValues := []destinationTest{
 		{NewPoint(38.10096062273525, -75), 100, 0,
-			map[string]Point{
+			map[Unit]Point{
 				Kilometers: {39, -75},
 				Miles:      {39.54782374175248, -75},
 				Degrees:    {41.8990393544318, 105},
@@ -135,7 +125,7 @@ func TestDestination(t *testing.T) {
 			},
 		},
 		{NewPoint(39, -75), 100, 180,
-			map[string]Point{
+			map[Unit]Point{
 				Kilometers: {38.10096062273525, -75},
 				Miles:      {37.55313688098277, -75},
 				Degrees:    {-61.00000002283296, -74.99999999999999},
@@ -143,7 +133,7 @@ func TestDestination(t *testing.T) {
 			},
 		},
 		{NewPoint(39, -75), 100, 90,
-			map[string]Point{
+			map[Unit]Point{
 				Kilometers: {38.994288534328966, -73.84321473156825},
 				Miles:      {38.985208813672266, -73.13849445143401},
 				Degrees:    {-6.27383195845071, 22.802746801915237},
@@ -151,7 +141,7 @@ func TestDestination(t *testing.T) {
 			},
 		},
 		{NewPoint(39, -75), 5000, 90,
-			map[string]Point{
+			map[Unit]Point{
 				Kilometers: {26.446988157260996, -22.898974671086123},
 				Miles:      {11.00429485821584, 1.1054470055309658},
 				Degrees:    {28.821822144704377, -122.19517685125443},
@@ -170,12 +160,6 @@ func TestDestination(t *testing.T) {
 				So(dest.Lng, ShouldAlmostEqual, expected.Lng, 0.0000001)
 			}
 		}
-	})
-
-	Convey("Given a wrong unit, should throw error", t, func() {
-		_, err := Destination(&Point{}, 32, 120, "invalidUnit")
-		So(err, ShouldNotBeNil)
-		So(err, ShouldResemble, invalidUnitError("invalidUnit"))
 	})
 
 	Convey("Given nil start, should throw error", t, func() {
@@ -200,13 +184,13 @@ func TestDistance(t *testing.T) {
 	type distanceTest struct {
 		point1 *Point
 		point2 *Point
-		result map[string]float64
+		result map[Unit]float64
 	}
 
 	testValues := []distanceTest{
 		{NewPoint(39.984, -75.343),
 			NewPoint(39.123, -75.534),
-			map[string]float64{
+			map[Unit]float64{
 				Kilometers: 97.15957803131901,
 				Miles:      60.37218405837491,
 				Degrees:    0.8735028650863799,
@@ -215,7 +199,7 @@ func TestDistance(t *testing.T) {
 		},
 		{NewPoint(72.134, -10.143),
 			NewPoint(39.123, -75.534),
-			map[string]float64{
+			map[Unit]float64{
 				Kilometers: 5072.014768708954,
 				Miles:      3151.604971612656,
 				Degrees:    45.59940998096528,
@@ -232,15 +216,6 @@ func TestDistance(t *testing.T) {
 				So(actual, ShouldAlmostEqual, tt.result[unit], 0.0000001)
 			}
 		}
-	})
-
-	Convey("Given a wrong unit, should throw error", t, func() {
-		point1 := NewPoint(39.984, -75.343)
-		point2 := NewPoint(39.123, -75.534)
-
-		_, err := Distance(point1, point2, "invalidUnit")
-		So(err, ShouldNotBeNil)
-		So(err, ShouldResemble, invalidUnitError("invalidUnit"))
 	})
 
 	Convey("Given nil points, should return error", t, func() {
@@ -365,7 +340,7 @@ func TestExpand(t *testing.T) {
 	type expandTest struct {
 		geometry Geometry
 		distance float64
-		unit     string
+		unit     Unit
 		result   *BoundingBox
 	}
 

@@ -1,7 +1,6 @@
 package turfgo
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -17,12 +16,6 @@ func TestPointOnLine(t *testing.T) {
 	point5 := &Point{38.889563, -77.021884}
 	point6 := &Point{38.892368, -77.019824}
 	lineString := NewLineString([]*Point{point1, point2, point3, point4, point5, point6})
-
-	Convey("Given a wrong unit, should throw error", t, func() {
-		_, _, _, err := PointOnLine(pointOutsideLine, lineString, "invalidUnit")
-		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
-	})
 
 	Convey("Given a point and a lineString, should calculate a point on line", t, func() {
 		expected := &Point{38.881361463229524, -77.02996941477018}

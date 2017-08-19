@@ -8,7 +8,7 @@ import (
 const invalidBearing = -1234.0
 
 // PointOnLine takes a Point and a LineString and calculates the closest Point on the LineString.
-func PointOnLine(point *Point, lineString *LineString, units string) (*Point, float64, int, error) {
+func PointOnLine(point *Point, lineString *LineString, unit Unit) (*Point, float64, int, error) {
 	closestPt := &Point{infinity, infinity}
 	closestDistance := float64(infinity)
 	index := -1
@@ -17,23 +17,23 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 	for i := 0; i < len(coords)-1; i++ {
 		start := coords[i]
 		stop := coords[i+1]
-		startDist, err := Distance(point, start, units)
+		startDist, err := Distance(point, start, unit)
 		if err != nil {
 			return nil, -1, -1, err
 		}
-		stopDist, _ := Distance(point, stop, units)
+		stopDist, _ := Distance(point, stop, unit)
 		direction, err := Bearing(start, stop)
 		if err != nil {
 			return nil, -1, -1, err
 		}
 		height := math.Max(stopDist, startDist)
 
-		perpendicularPt1, _ := Destination(point, height, direction+90, units)
-		perpendicularPt2, _ := Destination(point, height, direction-90, units)
+		perpendicularPt1, _ := Destination(point, height, direction+90, unit)
+		perpendicularPt2, _ := Destination(point, height, direction-90, unit)
 		intersect := lineIntersects(perpendicularPt1, perpendicularPt2, start, stop)
 		intersectD := float64(infinity)
 		if intersect != nil {
-			intersectD, _ = Distance(point, intersect, units)
+			intersectD, _ = Distance(point, intersect, unit)
 		}
 		if startDist < closestDistance {
 			closestPt = start
@@ -56,7 +56,7 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 
 // TriangularProjection calculate the projection of given point on the lineString, base angles for projection should be acute.
 // If bearing should also be considered, pass in a previous point, otherwise it should be nil
-func TriangularProjection(point *Point, previousPoint *Point, lineString *LineString, unit string) (*Point, float64, int, error) {
+func TriangularProjection(point *Point, previousPoint *Point, lineString *LineString, unit Unit) (*Point, float64, int, error) {
 	bearing := invalidBearing
 	if previousPoint != nil {
 		bearing, err := Bearing(previousPoint, point)

@@ -7,8 +7,7 @@ import (
 
 // Along takes a line and returns a point at a specified distance along the line.
 // Returns the last point if distance is more than the span of the line.
-// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
-func Along(lineString *LineString, distance float64, unit string) (*Point, error) {
+func Along(lineString *LineString, distance float64, unit Unit) (*Point, error) {
 	if lineString == nil {
 		return nil, errors.New("lineString can't be nil")
 	}
@@ -69,17 +68,12 @@ func Center(shapes ...Geometry) *Point {
 // Destination takes a Point and calculates the location of a destination point
 // given a distance in degrees, radians, miles, or kilometers; and bearing in
 // degrees. This uses the Haversine formula to account for global curvature.
-// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
-func Destination(start *Point, distance float64, bearing float64, unit string) (*Point, error) {
+func Destination(start *Point, distance float64, bearing float64, unit Unit) (*Point, error) {
 	if start == nil {
 		return nil, errors.New("startPoint can't be nil")
 	}
 
-	r, err := DistanceToRads(distance, unit)
-	if err != nil {
-		return nil, err
-	}
-
+	r := DistanceToRads(distance, unit)
 	lat, lon := DegreesToRads(start.Lat, start.Lng)
 	bearingRad := DegreeToRads(bearing)
 
@@ -93,8 +87,7 @@ func Destination(start *Point, distance float64, bearing float64, unit string) (
 
 // Distance calculates the distance between two points in degress, radians, miles, or
 // kilometers. This uses the Haversine formula to account for global curvature.
-// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
-func Distance(point1 *Point, point2 *Point, unit string) (float64, error) {
+func Distance(point1 *Point, point2 *Point, unit Unit) (float64, error) {
 	if point1 == nil || point2 == nil {
 		return -1, errors.New("points can't be nil")
 	}
@@ -104,7 +97,7 @@ func Distance(point1 *Point, point2 *Point, unit string) (float64, error) {
 	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
 		math.Sin(dLng/2)*math.Sin(dLng/2)*math.Cos(latRad1)*math.Cos(latRad2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-	return RadsToDistance(c, unit)
+	return RadsToDistance(c, unit), nil
 }
 
 // Bbox is an alias for Extent
@@ -141,8 +134,7 @@ func BboxToCorners(box *BoundingBox) (*Point, *Point) {
 
 // Expand Takes a set of features, calculates a collective bounding box around the features
 // and expand it by the given distance in all directions. It returns a bounding box.
-// Units should be one of km(kilometers), m(meters), mi(miles), r(radians) or d(degrees)
-func Expand(distance float64, unit string, geometries ...Geometry) (*BoundingBox, error) {
+func Expand(distance float64, unit Unit, geometries ...Geometry) (*BoundingBox, error) {
 	bbox := Bbox(geometries...)
 	bottomLeft, topRight := BboxToCorners(bbox)
 

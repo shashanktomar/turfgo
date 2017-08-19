@@ -4,49 +4,40 @@ const (
 	infinity = 0x7FF0000000000000
 )
 
+// Unit for distance
+type Unit int
+
 // Unit constants
 const (
-	Kilometers    = "kilometers"
-	Miles         = "miles"
-	Meters        = "meters"
-	CentiMeters   = "centimeters"
-	MilliMeters   = "millimeters"
-	Degrees       = "degress"
-	Radians       = "radians"
-	NauticalMiles = "nauticalmiles"
-	Inches        = "inches"
-	Yards         = "yards"
-	Feet          = "feet"
-	Acres         = "acres"
+	Kilometers Unit = iota
+	Miles
+	Meters
+	Centimeters
+	Degrees
+	Radians
+	NauticalMiles
+	Inches
+	Yards
+	Feet
 )
 
-var r = map[string]float64{
-	Miles:      3960,
-	Kilometers: 6373,
-	Meters:     6373000,
-	Degrees:    57.2957795,
-	Radians:    1,
-}
-
-var factors = map[string]float64{
+var radius = map[Unit]float64{
+	Kilometers:    6373,
 	Miles:         3960,
-	NauticalMiles: 3441.145,
+	Meters:        6373000,
+	Centimeters:   6.373e+8,
 	Degrees:       57.2957795,
 	Radians:       1,
+	NauticalMiles: 3441.145,
 	Inches:        250905600,
 	Yards:         6969600,
-	Meters:        6373000,
-	CentiMeters:   6.373e+8,
-	Kilometers:    6373,
 	Feet:          20908792.65,
 }
 
-var areaFactors = map[string]float64{
+var areaFactors = map[Unit]float64{
 	Kilometers:  0.000001,
 	Meters:      1,
-	CentiMeters: 10000,
-	MilliMeters: 1000000,
-	Acres:       0.000247105,
+	Centimeters: 10000,
 	Miles:       3.86e-7,
 	Yards:       1.195990046,
 	Feet:        10.763910417,

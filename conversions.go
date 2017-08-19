@@ -18,31 +18,32 @@ func DegreesToRads(first float64, second float64) (float64, float64) {
 }
 
 // DistanceToRads convert a distance measurement (assuming a spherical Earth) from a real-world unit into radians
-// Valid units: miles, nauticalmiles, inches, yards, meters, metres, kilometers, centimeters, feet
-func DistanceToRads(distance float64, unit string) (float64, error) {
-	f, ok := factors[unit]
-	if !ok {
-		return -1, invalidUnitError(unit)
-	}
-	return distance / f, nil
+func DistanceToRads(distance float64, unit Unit) float64 {
+	return distance / radius[unit]
 }
 
 // RadsToDistance convert a distance measurement (assuming a spherical Earth) from radians to a more friendly unit.
-// Valid units: miles, nauticalmiles, inches, yards, meters, kilometers, centimeters, feet
-func RadsToDistance(radians float64, unit string) (float64, error) {
-	f, ok := factors[unit]
-	if !ok {
-		return -1, invalidUnitError(unit)
-	}
-	return radians * f, nil
+func RadsToDistance(radians float64, unit Unit) float64 {
+	return radians * radius[unit]
 }
 
 // DistanceToDegrees convert a distance measurement (assuming a spherical Earth) from a real-world unit into degrees
-// Valid units: miles, nauticalmiles, inches, yards, meters, centimeters, kilometres, feet
-func DistanceToDegrees(distance float64, unit string) (float64, error) {
-	d, err := DistanceToRads(distance, unit)
-	if err != nil {
-		return -1, err
-	}
-	return RadsToDegree(d), nil
+func DistanceToDegrees(distance float64, unit Unit) float64 {
+	return RadsToDegree(DistanceToRads(distance, unit))
 }
+
+// ConvertDistance converts a distance to the requested unit.
+func ConvertDistance(distance float64, originalUnit Unit, finalUnit Unit) float64 {
+	return RadsToDistance(DistanceToRads(distance, originalUnit), finalUnit)
+}
+
+// BearingToAngle converts any bearing angle from the north line direction (positive clockwise)
+// and returns an angle between 0-360 degrees (positive clockwise), 0 being the north line
+func BearingToAngle(bearing float64) float64 {
+	angle := math.Mod(bearing, 360)
+	if angle < 0 {
+		angle += 360
+	}
+	return angle
+}
+
