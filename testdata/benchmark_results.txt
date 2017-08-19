@@ -1,0 +1,9 @@
+BenchmarkIsBboxOverlap-8   	2000000000	         1.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAlong-8           	   10000	    106490 ns/op	      16 B/op	       1 allocs/op
+BenchmarkBearing-8         	10000000	       136 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDestination-8     	 5000000	       277 ns/op	      16 B/op	       1 allocs/op
+BenchmarkDistance-8        	10000000	       167 ns/op	       0 B/op	       0 allocs/op
+BenchmarkExtent-8          	10000000	       139 ns/op	      80 B/op	       2 allocs/op
+BenchmarkExpand-8          	 1000000	      1300 ns/op	     160 B/op	      10 allocs/op
+PASS
+ok  	github.com/shashanktomar/turfgo	12.662s

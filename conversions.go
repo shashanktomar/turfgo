@@ -20,7 +20,7 @@ func DegreesToRads(first float64, second float64) (float64, float64) {
 // DistanceToRads convert a distance measurement (assuming a spherical Earth) from a real-world unit into radians
 // Valid units: miles, nauticalmiles, inches, yards, meters, metres, kilometers, centimeters, feet
 func DistanceToRads(distance float64, unit string) (float64, error) {
-	f, ok := Factors[unit]
+	f, ok := factors[unit]
 	if !ok {
 		return -1, invalidUnitError(unit)
 	}
@@ -30,7 +30,7 @@ func DistanceToRads(distance float64, unit string) (float64, error) {
 // RadsToDistance convert a distance measurement (assuming a spherical Earth) from radians to a more friendly unit.
 // Valid units: miles, nauticalmiles, inches, yards, meters, kilometers, centimeters, feet
 func RadsToDistance(radians float64, unit string) (float64, error) {
-	f, ok := Factors[unit]
+	f, ok := factors[unit]
 	if !ok {
 		return -1, invalidUnitError(unit)
 	}

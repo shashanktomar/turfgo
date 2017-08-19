@@ -20,8 +20,7 @@ const (
 	Acres         = "acres"
 )
 
-//R is radius of earth
-var R = map[string]float64{
+var r = map[string]float64{
 	Miles:      3960,
 	Kilometers: 6373,
 	Meters:     6373000,
@@ -29,8 +28,7 @@ var R = map[string]float64{
 	Radians:    1,
 }
 
-// Factors for unit conversion
-var Factors = map[string]float64{
+var factors = map[string]float64{
 	Miles:         3960,
 	NauticalMiles: 3441.145,
 	Degrees:       57.2957795,
@@ -43,8 +41,7 @@ var Factors = map[string]float64{
 	Feet:          20908792.65,
 }
 
-// AreaFactors for area unit conversion
-var AreaFactors = map[string]float64{
+var areaFactors = map[string]float64{
 	Kilometers:  0.000001,
 	Meters:      1,
 	CentiMeters: 10000,
