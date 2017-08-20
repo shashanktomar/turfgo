@@ -17,23 +17,17 @@ func PointOnLine(point *Point, lineString *LineString, unit Unit) (*Point, float
 	for i := 0; i < len(coords)-1; i++ {
 		start := coords[i]
 		stop := coords[i+1]
-		startDist, err := Distance(point, start, unit)
-		if err != nil {
-			return nil, -1, -1, err
-		}
-		stopDist, _ := Distance(point, stop, unit)
-		direction, err := Bearing(start, stop)
-		if err != nil {
-			return nil, -1, -1, err
-		}
+		startDist := Distance(point, start, unit)
+		stopDist := Distance(point, stop, unit)
+		direction := Bearing(start, stop)
 		height := math.Max(stopDist, startDist)
 
-		perpendicularPt1, _ := Destination(point, height, direction+90, unit)
-		perpendicularPt2, _ := Destination(point, height, direction-90, unit)
+		perpendicularPt1 := Destination(point, height, direction+90, unit)
+		perpendicularPt2 := Destination(point, height, direction-90, unit)
 		intersect := lineIntersects(perpendicularPt1, perpendicularPt2, start, stop)
 		intersectD := float64(infinity)
 		if intersect != nil {
-			intersectD, _ = Distance(point, intersect, unit)
+			intersectD = Distance(point, intersect, unit)
 		}
 		if startDist < closestDistance {
 			closestPt = start
@@ -59,10 +53,7 @@ func PointOnLine(point *Point, lineString *LineString, unit Unit) (*Point, float
 func TriangularProjection(point *Point, previousPoint *Point, lineString *LineString, unit Unit) (*Point, float64, int, error) {
 	bearing := invalidBearing
 	if previousPoint != nil {
-		bearing, err := Bearing(previousPoint, point)
-		if err != nil {
-			return nil, -1, -1, err
-		}
+		bearing = Bearing(previousPoint, point)
 		for bearing < 0 {
 			bearing += 360
 		}
@@ -71,10 +62,7 @@ func TriangularProjection(point *Point, previousPoint *Point, lineString *LineSt
 		start := lineString.Points[i]
 		end := lineString.Points[i+1]
 		if !isAnyBaseAngleObtuse(point, start, end) {
-			bearingLs, err := Bearing(start, end)
-			if err != nil {
-				return nil, -1, -1, err
-			}
+			bearingLs := Bearing(start, end)
 			for bearingLs < 0 {
 				bearingLs += 360
 			}
@@ -129,9 +117,9 @@ func lineIntersects(line1Start *Point, line1End *Point, line2Start *Point, line2
 }
 
 func isAnyBaseAngleObtuse(point *Point, start *Point, end *Point) bool {
-	alpha, _ := Distance(point, start, Miles)
-	beta, _ := Distance(point, end, Miles)
-	gamma, _ := Distance(start, end, Miles)
+	alpha := Distance(point, start, Miles)
+	beta := Distance(point, end, Miles)
+	gamma := Distance(start, end, Miles)
 	if gamma == 0 {
 		return true
 	}

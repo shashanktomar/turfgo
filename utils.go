@@ -1,6 +1,8 @@
 package turfgo
 
-import "math"
+import (
+	"math"
+)
 
 const (
 	threeDecimalPlaces  float64 = .001

@@ -45,23 +45,17 @@ func TestAlong(t *testing.T) {
 		ls, err := DecodeLineStringFromFeatureJSON(gj)
 		So(err, ShouldBeNil)
 		for _, tt := range testValues {
-			p, err := Along(ls, tt.distance, tt.unit)
-			So(err, ShouldBeNil)
+			p := Along(ls, tt.distance, tt.unit)
 			So(p.Lat, ShouldAlmostEqual, tt.result.Lat, 0.0000001)
 			So(p.Lng, ShouldAlmostEqual, tt.result.Lng, 0.0000001)
 		}
 
 	})
-
-	Convey("Given nil points, should return error", t, func() {
-		_, err := Along(nil, 22, Kilometers)
-		So(err.Error(), ShouldEqual, "lineString can't be nil")
-	})
 }
 
 func BenchmarkAlong(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		testResultP, _ = Along(longRoute, 20.234, Miles)
+		testResultP = Along(longRoute, 20.234, Miles)
 	}
 }
 
@@ -84,15 +78,9 @@ func TestBearing(t *testing.T) {
 
 	Convey("Given two points, should calculate bearing between them", t, func() {
 		for _, tt := range testValues {
-			actual, err := Bearing(tt.point1, tt.point2)
-			So(err, ShouldBeNil)
+			actual := Bearing(tt.point1, tt.point2)
 			So(actual, ShouldAlmostEqual, tt.result, 0.0000001)
 		}
-	})
-
-	Convey("Given nil points, should return error", t, func() {
-		_, err := Bearing(nil, &Point{})
-		So(err.Error(), ShouldEqual, "points can't be nil")
 	})
 }
 
@@ -102,7 +90,7 @@ func BenchmarkBearing(b *testing.B) {
 	p2 := NewPoint(39.123, -75.534)
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		testResultF, _ = Bearing(p1, p2)
+		testResultF = Bearing(p1, p2)
 	}
 }
 
@@ -154,18 +142,11 @@ func TestDestination(t *testing.T) {
 		for _, tt := range testValues {
 			for _, unit := range units {
 				expected := tt.result[unit]
-				dest, err := Destination(tt.point, tt.distance, tt.bearing, unit)
-				So(err, ShouldBeNil)
+				dest := Destination(tt.point, tt.distance, tt.bearing, unit)
 				So(dest.Lat, ShouldAlmostEqual, expected.Lat, 0.0000001)
 				So(dest.Lng, ShouldAlmostEqual, expected.Lng, 0.0000001)
 			}
 		}
-	})
-
-	Convey("Given nil start, should throw error", t, func() {
-		_, err := Destination(nil, 32, 120, Kilometers)
-		So(err, ShouldNotBeNil)
-		So(err.Error(), ShouldResemble, "startPoint can't be nil")
 	})
 
 }
@@ -175,7 +156,7 @@ func BenchmarkDestination(b *testing.B) {
 	p := NewPoint(39.984, -75.343)
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		testResultP, _ = Destination(p, 45.34, 120.5, Miles)
+		testResultP = Destination(p, 45.34, 120.5, Miles)
 	}
 }
 
@@ -211,23 +192,17 @@ func TestDistance(t *testing.T) {
 	Convey("Given two points, should calculate distance between them", t, func() {
 		for _, tt := range testValues {
 			for _, unit := range units {
-				actual, err := Distance(tt.point1, tt.point2, unit)
-				So(err, ShouldBeNil)
+				actual := Distance(tt.point1, tt.point2, unit)
 				So(actual, ShouldAlmostEqual, tt.result[unit], 0.0000001)
 			}
 		}
-	})
-
-	Convey("Given nil points, should return error", t, func() {
-		_, err := Distance(nil, &Point{}, Kilometers)
-		So(err.Error(), ShouldEqual, "points can't be nil")
 	})
 
 }
 
 func BenchmarkDistance(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		testResultF, _ = Distance(&Point{39.984, -75.343},
+		testResultF = Distance(&Point{39.984, -75.343},
 			&Point{39.123, -75.534}, Miles)
 	}
 }
@@ -359,8 +334,7 @@ func TestExpand(t *testing.T) {
 	}
 	Convey("Given different type of shapes, should return bounding box", t, func() {
 		for _, tt := range testValues {
-			b, err := Expand(tt.distance, tt.unit, tt.geometry)
-			So(err, ShouldBeNil)
+			b := Expand(tt.distance, tt.unit, tt.geometry)
 			So(b, ShouldResemble, tt.result)
 		}
 	})
@@ -378,6 +352,6 @@ func BenchmarkExpand(b *testing.B) {
 	})
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		testResultBbox, _ = Expand(20, Kilometers, lineString)
+		testResultBbox = Expand(20, Kilometers, lineString)
 	}
 }
