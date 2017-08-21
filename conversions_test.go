@@ -61,3 +61,55 @@ func TestConvertDistance(t *testing.T) {
 	})
 
 }
+
+func TestConvertArea(t *testing.T) {
+	Convey("Should convert distance between units", t, func() {
+		a, err := ConvertArea(0, Meters, Kilometers)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 0, twelveDecimalPlaces)
+
+		a, err = ConvertArea(1000, Meters, Kilometers)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 0.001, twelveDecimalPlaces)
+
+		a, err = ConvertArea(1, Kilometers, Miles)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 0.386, twelveDecimalPlaces)
+
+		a, err = ConvertArea(1, Miles, Kilometers)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 2.5906735751295336, twelveDecimalPlaces)
+
+		a, err = ConvertArea(1, Meters, Centimeters)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 10000, twelveDecimalPlaces)
+
+		a, err = ConvertArea(100, Meters, Yards)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 119.59900459999999, twelveDecimalPlaces)
+
+		a, err = ConvertArea(100, Meters, Feet)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 1076.3910417, twelveDecimalPlaces)
+
+		a, err = ConvertArea(100000, Feet, Kilometers)
+		So(err, ShouldBeNil)
+		So(a, ShouldAlmostEqual, 0.009290303999749462, twelveDecimalPlaces)
+	})
+
+	Convey("Should return error if area is negative", t, func() {
+		_, err := ConvertArea(-100, Meters, Kilometers)
+		So(err.Error(), ShouldEqual, "area can't be negative")
+	})
+
+	Convey("Should return error if original unit is wrong", t, func() {
+		_, err := ConvertArea(100, Radians, Kilometers)
+		So(err.Error(), ShouldEqual, "invalid unit")
+	})
+
+	Convey("Should return error if final unit is wrong", t, func() {
+		_, err := ConvertArea(100, Meters, Radians)
+		So(err.Error(), ShouldEqual, "invalid unit")
+	})
+
+}

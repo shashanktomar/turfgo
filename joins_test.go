@@ -1,9 +1,8 @@
 package turfgo
 
 import (
-	"testing"
-
 	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
 
 func TestInside(t *testing.T) {

@@ -1,6 +1,9 @@
 package turfgo
 
-import "math"
+import (
+	"errors"
+	"math"
+)
 
 // RadsToDegree convert a radians (assuming a spherical Earth) into degrees
 func RadsToDegree(rad float64) float64 {
@@ -45,4 +48,21 @@ func BearingToAngle(bearing float64) float64 {
 		angle += 360
 	}
 	return angle
+}
+
+// ConvertArea converts an area to the requested unit.
+// Allowed units are Kilometers, Meters, Centimeters, Miles, Yards, Feet, Inches
+func ConvertArea(area float64, originalUnit Unit, finalUnit Unit) (float64, error) {
+	if area < 0 {
+		return -1, errors.New("area can't be negative")
+	}
+	startFactor, ok := areaFactors[originalUnit]
+	if !ok {
+		return -1, errors.New("invalid unit")
+	}
+	finalFactor, ok := areaFactors[finalUnit]
+	if !ok {
+		return -1, errors.New("invalid unit")
+	}
+	return (area / startFactor) * finalFactor, nil
 }
