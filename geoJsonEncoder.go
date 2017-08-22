@@ -4,7 +4,17 @@ import (
 	"encoding/json"
 
 	"github.com/kpawlik/geojson"
+	"errors"
 )
+
+func DecodeFeatureCollection(gj []byte) (*geojson.FeatureCollection, error) {
+	var f *geojson.FeatureCollection
+	err := json.Unmarshal(gj, &f)
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
+}
 
 // DecodeLineStringFromFeatureJSON decode geojson feature type lineString into *LineString
 func DecodeLineStringFromFeatureJSON(gj []byte) (*LineString, error) {
@@ -19,7 +29,7 @@ func DecodeLineStringFromFeatureJSON(gj []byte) (*LineString, error) {
 	}
 	ls, ok := g.(*geojson.LineString)
 	if !ok {
-		return nil, err
+		return nil, errors.New("geometry is not of type linestring")
 	}
 	points := []*Point{}
 	for _, c := range ls.Coordinates {
