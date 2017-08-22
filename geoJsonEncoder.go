@@ -31,11 +31,15 @@ func DecodeLineStringFromFeatureJSON(gj []byte) (*LineString, error) {
 	if !ok {
 		return nil, errors.New("geometry is not of type linestring")
 	}
+	return decodeLine(ls), nil
+}
+
+func decodeLine(ls *geojson.LineString) *LineString {
 	points := []*Point{}
 	for _, c := range ls.Coordinates {
 		points = append(points, decodePoint(c))
 	}
-	return NewLineString(points), nil
+	return NewLineString(points)
 }
 
 func decodePoint(coord geojson.Coordinate) *Point {
